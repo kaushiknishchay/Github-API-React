@@ -10,9 +10,9 @@ axios.defaults.headers.common['Accept'] = "application/vnd.github.v3+json";
 
 export function getRepos(username) {
 	return axios.get(`/users/${username}/repos`)
-			.then(res=>{
-		console.log(res)
-	}, error=>{
-		console.error(error);
-	});
+			.then(res => {
+				console.log(res.data)
+			}, error => {
+				console.error(error);
+			});
 }
