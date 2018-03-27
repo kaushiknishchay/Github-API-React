@@ -1,18 +1,32 @@
 import axios from "axios";
-export const ROOT_URL = "https://api.github.com";
+import {TOKEN_URL, USER_DETAIL_URL} from "../lib/constants";
 
-export const defaultHeaders = {
-	Accept: "application/vnd.github.v3+json"
-};
 
-axios.defaults.baseURL = ROOT_URL;
-axios.defaults.headers.common['Accept'] = "application/vnd.github.v3+json";
+export function getAuthToken(token, state) {
+    let code = token;
+
+    return axios({
+        method: 'GET',
+        url: TOKEN_URL + "/" + code,
+    });
+}
+
+export function getUserDetails() {
+    return axios({
+        method: "GET",
+        params: {},
+        url: USER_DETAIL_URL,
+        headers: {
+            Authorization: "token " + localStorage.getItem('auth-token')
+        }
+    });
+}
 
 export function getRepos(username) {
-	return axios.get(`/users/${username}/repos`)
-			.then(res => {
-				console.log(res.data)
-			}, error => {
-				console.error(error);
-			});
+    return axios.get(`/users/${username}/repos`)
+        .then(res => {
+            console.log(res)
+        }, error => {
+            console.error(error);
+        });
 }
