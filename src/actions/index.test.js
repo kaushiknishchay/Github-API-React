@@ -1,32 +1,52 @@
-import {beginSignIn, SIGN_OUT, signOut} from "./index";
-const httpFetch = require("../service/httpFetch");
+import {beginSignIn, getUserInfo, SIGN_OUT, signOut} from "./index";
 
+jest.mock("../service/httpFetch");
 
-describe('Actions test', function () {
+describe('Actions', function () {
 
-    let dispatch;
+	let dispatch;
 
-    beforeAll(() => {
-        dispatch = jest.fn();
-    });
+	beforeAll(() => {
+		dispatch = jest.fn();
+	});
 
-    afterEach(() => {
-        dispatch.mockClear();
-    });
+	afterEach(() => {
+		dispatch.mockClear();
+	});
 
-    it('signout action', () => {
+	it('==> Sign Out', () => {
 
-        expect(signOut()).toEqual({
-            type: SIGN_OUT
-        });
+		expect(signOut()).toEqual({
+			type: SIGN_OUT
+		});
 
-    });
+	});
 
-    it('Get Repo Info', ()=>{
+	it('==> Login', async () => {
 
-        httpFetch.getAuthToken = jest.fn();
+		await beginSignIn("blah", "blah")(dispatch);
+		expect(dispatch.mock.calls[0][0]).toEqual({
+			type: 'SIGNIN_REQUEST'
+		});
 
-        console.log(beginSignIn("blah", "blah")(dispatch));
+		expect(dispatch.mock.calls[1][0]).toEqual({
+			type: 'SIGNED_IN',
+			token: 'i-got-token'
+		});
 
-    })
+	});
+
+	it('==> User Info', async () => {
+
+		await getUserInfo()(dispatch);
+
+		expect(dispatch.mock.calls[0][0]).toEqual({
+			type: 'USER_DATA',
+			user: {
+				login: "iAmUser",
+				avatar_url: "http://myimage.com"
+			}
+		});
+
+	});
 });

@@ -22,6 +22,7 @@
     "eject": "react-scripts eject"
   },
   "devDependencies": {
+    "jest-localstorage-mock": "^2.2.0",
     "prop-types": "latest",
     "redux-devtools-extension": "^2.13.2"
   }
