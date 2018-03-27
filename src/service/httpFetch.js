@@ -1,6 +1,11 @@
 import axios from "axios";
 import {ROOT_URL, TOKEN_URL, USER_DETAIL_URL} from "../lib/constants";
 
+export default httpFetch = {
+    getAuthToken,
+    getUserDetails,
+    getRepos
+};
 
 export function getAuthToken(token, state) {
     let code = token;

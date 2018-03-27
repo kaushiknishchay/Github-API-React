@@ -1,4 +1,6 @@
-import {SIGN_OUT, signOut} from "./index";
+import {beginSignIn, SIGN_OUT, signOut} from "./index";
+const httpFetch = require("../service/httpFetch");
+
 
 describe('Actions test', function () {
 
@@ -12,9 +14,6 @@ describe('Actions test', function () {
         dispatch.mockClear();
     });
 
-    beforeEach(() => {
-    });
-
     it('signout action', () => {
 
         expect(signOut()).toEqual({
@@ -23,5 +22,11 @@ describe('Actions test', function () {
 
     });
 
-    it('')
+    it('Get Repo Info', ()=>{
+
+        httpFetch.getAuthToken = jest.fn();
+
+        console.log(beginSignIn("blah", "blah")(dispatch));
+
+    })
 });
