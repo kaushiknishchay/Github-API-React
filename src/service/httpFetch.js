@@ -1,5 +1,5 @@
 import axios from "axios";
-import {TOKEN_URL, USER_DETAIL_URL} from "../lib/constants";
+import {ROOT_URL, TOKEN_URL, USER_DETAIL_URL} from "../lib/constants";
 
 
 export function getAuthToken(token, state) {
@@ -23,10 +23,11 @@ export function getUserDetails() {
 }
 
 export function getRepos(username) {
-    return axios.get(`/users/${username}/repos`)
-        .then(res => {
-            console.log(res)
-        }, error => {
-            console.error(error);
-        });
+    return axios({
+        method: "GET",
+        url: ROOT_URL+"/users/"+username+"/repos",
+        headers: {
+            Authorization: "token " + localStorage.getItem('auth-token')
+        }
+    });
 }

@@ -5,9 +5,10 @@ class Profile extends Component {
     render() {
         let {data} = this.props;
         return (
-            <div className="media">
+            <div className="media card">
+                <br/>
                 <img className="mr-3" src={data.avatar_url} height={100} alt={data.login}/>
-                <div className="media-body">
+                <div className="card-body">
                     <h5 className="mt-0">{data.login}</h5>
                     {data.bio}
                 </div>
