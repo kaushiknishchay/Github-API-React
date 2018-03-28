@@ -21,6 +21,7 @@ describe('Actions', () => {
 
   it('==> Login', async () => {
     await beginSignIn('blah', 'blah')(dispatch);
+
     expect(dispatch.mock.calls[0][0]).toEqual({
       type: 'SIGNIN_REQUEST',
     });

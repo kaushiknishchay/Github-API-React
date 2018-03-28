@@ -1,7 +1,7 @@
 /* eslint-disable prefer-promise-reject-errors,no-unused-vars */
-export function getAuthToken(code, state) {
+export function getAuthToken(code) {
   return new Promise((resolve, reject) => {
-    if (code && state) {
+    if (code) {
       resolve({
         data: {
           token: 'i-got-token',

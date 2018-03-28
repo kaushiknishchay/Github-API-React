@@ -1,5 +1,5 @@
 import { fromJS } from 'immutable';
-import { gitHub } from './githHub';
+import gitHub from './githHub';
 import { SIGN_OUT, SIGNED_IN, SIGNIN_REQUEST, USER_DATA } from '../actions';
 
 

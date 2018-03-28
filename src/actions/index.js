@@ -27,6 +27,8 @@ export function beginSignIn(authCode) {
       const authToken = res.data.token;
       localStorage.setItem('auth-token', authToken);
       dispatch(success(authToken));
+    }).catch((err) => {
+      console.log(err);
     });
   };
 }
