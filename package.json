@@ -7,13 +7,14 @@
       "src/**/*.{js,jsx}",
       "!src/**/registerServiceWorker.js",
       "!src/**/index.js",
-      "!src/**/httpFetch.js"
+      "!src/**/httpFetch.js",
+      "!src/**/setupTests.js"
     ],
     "coverageThreshold": {
       "global": {
         "branches": 30,
-        "functions": 40,
-        "lines": 40,
+        "functions": 30,
+        "lines": 30,
         "statements": 10
       }
     }
