@@ -28,7 +28,7 @@
     "test": "react-scripts test --env=jsdom --verbose",
     "eject": "react-scripts eject",
     "test:coverage": "react-scripts test --env=jsdom --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "lint": "(eslint --ext=js --ext=jsx . ) && echo Lint Passed! ALL Clear! ❤",
+    "lint": "(eslint --ext=js --ext=jsx . ) && echo Lint Passed! ALL Clear! ❤"
   },
   "devDependencies": {
     "coveralls": "^3.0.0",
@@ -43,5 +43,5 @@
   },
   "eslintIgnore": [
     "registerServiceWorker.js"
-  ],
+  ]
 }
