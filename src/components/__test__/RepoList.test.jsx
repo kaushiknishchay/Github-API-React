@@ -12,7 +12,7 @@ describe('RepoList Component', () => {
     name: 'airbnb-spark-thrift',
   }];
 
-  it('should Render', () => {
+  it('should Render 2 repo items', () => {
     const wrapper = shallow(<RepoList data={repos} />);
 
     // should show 2 repo items in list
