@@ -6,7 +6,7 @@
     "collectCoverageFrom": [
       "src/**/*.{js,jsx}",
       "!src/**/registerServiceWorker.js",
-      "!src/**/index.jsx",
+      "!src/**/index.js",
       "!src/**/httpFetch.js"
     ],
     "coverageThreshold": {
