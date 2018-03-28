@@ -1,63 +1,75 @@
-import React, {Component} from 'react';
-import {withRouter} from 'react-router-dom';
-import Header from "../components/Header";
-import {AUTH_URL} from "../lib/constants";
-import {connect} from "react-redux";
-import {bindActionCreators} from "redux";
-import {beginSignIn, signOut} from "../actions";
+import React from 'react';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
+import PropTypes from 'prop-types';
+import Header from '../components/Header';
+import { AUTH_URL } from '../lib/constants';
+import { beginSignIn, signOut } from '../actions';
 
-class HeaderContainer extends Component {
 
-    constructor(props) {
-        super(props);
-        this.onClick = this.onClick.bind(this);
-        this.goToAuthURL = this.goToAuthURL.bind(this);
+class HeaderContainer extends React.Component {
+  constructor(props) {
+    super(props);
+    this.onClick = this.onClick.bind(this);
+    this.goToAuthURL = this.goToAuthURL.bind(this);
+  }
+
+
+  // eslint-disable-next-line no-unused-vars
+  shouldComponentUpdate(nextProps, nextState) {
+    return nextProps.isSignIn !== this.props.isSignIn;
+  }
+
+
+  onClick() {
+    const token = localStorage.getItem('github-token');
+    if (this.props.isSignIn && token !== '' && token !== '') {
+      localStorage.removeItem('github-token');
+      localStorage.removeItem('auth-token');
+      this.props.signOut();
+    } else {
+      this.goToAuthURL();
     }
+  }
 
+  // eslint-disable-next-line class-methods-use-this
+  goToAuthURL() {
+    window.location = AUTH_URL;
+  }
 
-    shouldComponentUpdate(nextProps, nextState) {
-        return nextProps.isSignIn !== this.props.isSignIn;
-    }
+  render() {
+    const { isSignIn } = this.props;
 
-
-    onClick() {
-        let token = localStorage.getItem('github-token');
-        if (this.props.isSignIn && token !== "" && token !== "") {
-            localStorage.removeItem('github-token');
-            localStorage.removeItem('auth-token');
-            this.props.signOut();
-        } else {
-            this.goToAuthURL();
-        }
-    }
-
-    goToAuthURL() {
-        window.location = AUTH_URL;
-    }
-
-    render() {
-        let {isSignIn} = this.props;
-
-        return (
-            <Header onClick={this.onClick} isSignIn={isSignIn}/>
-        );
-    }
+    return (
+      <Header onClick={this.onClick} isSignIn={isSignIn} />
+    );
+  }
 }
 
+HeaderContainer.defaultProps = {
+  signOut: () => '',
+  isSignIn: false,
+};
+
+HeaderContainer.propTypes = {
+  signOut: PropTypes.func,
+  isSignIn: PropTypes.bool,
+};
 
 function mapState(state) {
-    let token = state.getIn(['github', 'token']);
-    return {
-        token: token,
-        isSignIn: token !== undefined && token !== null,
-    }
+  const token = state.getIn(['github', 'token']);
+  return {
+    token,
+    isSignIn: token !== undefined && token !== null,
+  };
 }
 
 function mapDispatch(dispatch) {
-    return bindActionCreators({
-        signIn: beginSignIn,
-        signOut: signOut
-    }, dispatch);
+  return bindActionCreators({
+    signIn: beginSignIn,
+    signOut,
+  }, dispatch);
 }
 
 export default withRouter(connect(mapState, mapDispatch)(HeaderContainer));

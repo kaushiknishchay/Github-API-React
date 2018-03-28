@@ -2,6 +2,13 @@
   "name": "untitled",
   "version": "0.1.0",
   "private": true,
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx}",
+      "!src/**/registerServiceWorker.js",
+      "!src/**/index.jsx"
+    ]
+  },
   "dependencies": {
     "axios": "^0.18.0",
     "immutable": "^3.8.2",
@@ -13,17 +20,31 @@
     "redux": "^3.7.2",
     "redux-immutable": "^4.0.0",
     "redux-logger": "^3.0.6",
-    "redux-thunk": "^2.2.0"
+    "redux-thunk": "^2.2.0",
+    "prop-types": "latest",
+    "jest-localstorage-mock": "^2.2.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom --verbose",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "test:coverage": "react-scripts test --env=jsdom --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
+    "lint": "(eslint --ext=js --ext=jsx . ) && echo Lint Passed! ALL Clear! ❤"
   },
   "devDependencies": {
-    "jest-localstorage-mock": "^2.2.0",
-    "prop-types": "latest",
-    "redux-devtools-extension": "^2.13.2"
-  }
+    "coveralls": "^3.0.0",
+    "redux-devtools-extension": "^2.13.2",
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-plugin-import": "^2.9.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-react": "^7.7.0"
+  },
+  "eslintIgnore": [
+    "index.js",
+    "registerServiceWorker.js",
+    "coverage/*",
+    "*__mocks__*"
+  ]
 }
