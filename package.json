@@ -27,12 +27,21 @@
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom --verbose",
     "eject": "react-scripts eject",
-    "test:coverage": "react-scripts test --env=jsdom --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
+    "test:coverage": "react-scripts test --env=jsdom --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
+    "lint": "(eslint --ext=js --ext=jsx . ) && echo Lint Passed! ALL Clear! ❤",
   },
   "devDependencies": {
     "coveralls": "^3.0.0",
     "jest-localstorage-mock": "^2.2.0",
     "prop-types": "latest",
-    "redux-devtools-extension": "^2.13.2"
-  }
+    "redux-devtools-extension": "^2.13.2",
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-plugin-import": "^2.9.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-react": "^7.7.0"
+  },
+  "eslintIgnore": [
+    "registerServiceWorker.js"
+  ],
 }
