@@ -21,6 +21,17 @@ export function getUserDetails() {
   });
 }
 
+
+export function getFeeds(username) {
+  return axios({
+    method: 'GET',
+    url: `${ROOT_URL}/users/${username}/events`,
+    headers: {
+      Authorization: `token ${localStorage.getItem('auth-token')}`,
+    },
+  });
+}
+
 export function getRepos(username) {
   return axios({
     method: 'GET',

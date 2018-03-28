@@ -3,3 +3,19 @@ body {
     padding: 0;
     box-sizing: border-box;
 }
+
+.feed-title{
+    font-weight: bold;
+}
+
+.flex-wrap{
+    display: flex;
+    flex-direction: row;
+}
+
+.flex-10{
+    flex:10;
+}
+.flex-90{
+    flex: 90;
+}
