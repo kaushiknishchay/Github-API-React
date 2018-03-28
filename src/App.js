@@ -7,11 +7,6 @@ import Header from "./containers/Header";
 
 class App extends Component {
 
-    componentWillMount() {
-
-
-    }
-
     render() {
         return (
             <React.Fragment>

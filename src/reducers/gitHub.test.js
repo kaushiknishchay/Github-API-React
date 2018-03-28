@@ -1,70 +1,85 @@
-import * as localStorage from "jest-localstorage-mock";
-
-describe('authenticate reducer', () => {
-
-	// let localStorage;
-
-	beforeEach(() => {
-		localStorage.getItem = jest.fn().mockImplementation((key) => {
-			// console.log("hh");
-			return key + "===";
-		});
-	});
-
-	it('should return the initial state', () => {
-
-		expect(authenticate(undefined, {}))
-				.toEqual({loggedIn: false});
-	});
-
-	it('Login Request', () => {
-
-		expect(authenticate({}, {
-			type: actionConstants.LOGIN_REQUEST,
-			username: "admin"
-		})).toEqual({
-			loggedIn: false,
-			loggingIn: true,
-			username: "admin"
-		});
-	});
-
-	it('Login Success', () => {
-
-		expect(authenticate({}, {
-			type: actionConstants.LOGIN_SUCCESS,
-			user: {
-				username: "admin",
-				api_key: "JAFFKVNSI==="
-			}
-		})).toEqual({
-			loggedIn: true,
-			username: "admin",
-			ApiToken: "JAFFKVNSI==="
-		});
-	});
-
-	it('Login Failure', () => {
-
-		expect(authenticate({}, {
-			type: actionConstants.LOGIN_FAILURE,
-			error: "Login Failed"
-		})).toEqual({
-			loggedIn: false,
-			loginError: "Login Failed",
-		});
-	});
+import {gitHub} from "./githHub";
+import {fromJS} from "immutable";
+import {SIGN_OUT, SIGNED_IN, SIGNIN_REQUEST, USER_DATA} from "../actions";
 
 
-	it('Logout', () => {
+// use the httpFetch mock that i created
+jest.mock("../service/httpFetch");
 
-		expect(authenticate({}, {
-			type: actionConstants.LOGOUT,
-		})).toEqual({
-			loggedIn: false,
-			username: "",
-			ApiToken: ""
-		});
-	});
+describe('github reducer', () => {
 
+    let initialState;
+
+    beforeEach(() => {
+
+        initialState = fromJS({
+            loginRequest: null,
+            token: null,
+            user: null,
+        });
+    });
+
+    it('==> should give Initial State', () => {
+        expect(gitHub(undefined, {})).toEqual(initialState);
+    });
+
+    it('==> should set Login Request', () => {
+        expect(gitHub(initialState, {
+            type: SIGNIN_REQUEST,
+        })).toEqual(fromJS({
+            loginRequest: true,
+            token: null,
+            user: null
+        }));
+    });
+
+    it('==> should Login', () => {
+
+        expect(gitHub(initialState, {
+            type: SIGNED_IN,
+            token: ""
+        })).toEqual(fromJS({
+            loginRequest: false,
+            token: "",
+            user: null,
+        }));
+    });
+
+    it('==> should Logout', () => {
+
+        expect(gitHub(initialState, {
+            type: SIGN_OUT,
+        })).toEqual(fromJS({
+            loginRequest: false,
+            token: null,
+            user: null
+        }));
+    });
+
+    it('==> should Update User Profile Data', () => {
+
+        // send a log in action first
+        let loggedIn = gitHub(initialState, {
+            type: SIGNED_IN,
+            token: "i-got-token"
+        });
+
+        // check if user data is set
+        // and is token from login present
+
+        expect(gitHub(loggedIn, {
+            type: USER_DATA,
+            user: {
+                login: "username",
+                bio: "this is my bio"
+            }
+        }).toJS()).toEqual({ // convert the state to JS for comparison
+            loginRequest: false,
+            token: "i-got-token",
+            user: {
+                login: "username",
+                bio: "this is my bio"
+            }
+        });
+    });
 });

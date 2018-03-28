@@ -18,6 +18,7 @@ export function gitHub(state = initialState, action) {
             });
         case SIGN_OUT:
             return state.merge({
+                loginRequest: false,
                 token: null,
                 user: null
             });
