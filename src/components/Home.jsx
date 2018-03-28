@@ -25,11 +25,6 @@ class Home extends Component {
     if (this.props.token && !this.props.user) {
       this.props.getInfo();
     }
-
-    // if (this.props.user && this.state.fetchedFeeds === false) {
-    //   this.log('cdm2');
-    //   this.getUserFeeds(this.props.user.login);
-    // }
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -55,7 +50,6 @@ class Home extends Component {
 
   getUserRepos() {
     getRepos(this.state.username).then((res) => {
-      // console.log(res.data);
       this.setState({
         repoList: res.data,
       });
