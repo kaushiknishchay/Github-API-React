@@ -1,8 +1,8 @@
-import {combineReducers} from "redux-immutable";
-import {gitHub} from "./githHub";
+import { combineReducers } from 'redux-immutable';
+import { gitHub } from './githHub';
 
 const rootReducer = combineReducers({
-    github: gitHub
+  github: gitHub,
 });
 
 export default rootReducer;

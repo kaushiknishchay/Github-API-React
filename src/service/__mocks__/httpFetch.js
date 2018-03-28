@@ -1,29 +1,28 @@
-// noinspection JSUnusedGlobalSymbols
+/* eslint-disable prefer-promise-reject-errors,no-unused-vars */
 export function getAuthToken(code, state) {
-    return new Promise((resolve, reject) => {
-        if (code && state) {
-            resolve({
-                data: {
-                    token: "i-got-token"
-                }
-            });
-        }
-        else {
-            reject("Token fetch failed");
-        }
-    });
+  return new Promise((resolve, reject) => {
+    if (code && state) {
+      resolve({
+        data: {
+          token: 'i-got-token',
+        },
+      });
+    } else {
+      reject('Token fetch failed');
+    }
+  });
 }
 
 // noinspection JSUnusedGlobalSymbols
 export function getUserDetails() {
-    return new Promise((resolve, reject) => {
-        resolve({
-            data: {
-                login: "iAmUser",
-                avatar_url: "http://myimage.com"
-            }
-        });
+  return new Promise((resolve, reject) => {
+    resolve({
+      data: {
+        login: 'iAmUser',
+        avatar_url: 'http://myimage.com',
+      },
     });
+  });
 }
 
 //

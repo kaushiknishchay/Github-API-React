@@ -1,39 +1,42 @@
-import React, {Component} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
-class Header extends Component {
-    render() {
-        return (
-            <nav className="navbar navbar-dark bg-dark">
-                <a className="navbar-brand" href="/">React GitHub API</a>
-                <form className="form-inline">
-                    {
-                        !this.props.isSignIn &&
+export default function Header(props) {
+  return (
+    <nav className="navbar navbar-dark bg-dark">
+      <a className="navbar-brand" href="/">React GitHub API</a>
+      <form className="form-inline">
+        {
+                        !props.isSignIn &&
                         <button
-                            className="btn btn-md"
-                            type="button"
-                            onClick={this.props.onClick}>
+                          className="btn btn-md"
+                          type="button"
+                          onClick={props.onClick}
+                        >
                             Sign In
                         </button>
                     }
-                    {
-                        this.props.isSignIn &&
+        {
+                        props.isSignIn &&
                         <button
-                            className="btn btn-md"
-                            type="button"
-                            onClick={this.props.onClick}>
+                          className="btn btn-md"
+                          type="button"
+                          onClick={props.onClick}
+                        >
                             Sign Out
                         </button>
                     }
-                </form>
-            </nav>
-        );
-    }
+      </form>
+    </nav>
+  );
 }
 
-Header.propTypes = {
-    onSignIn: PropTypes.func,
-    onClick: PropTypes.func
+Header.defaultProps = {
+  onClick: e => e,
+  isSignIn: false,
 };
 
-export default Header;
+Header.propTypes = {
+  onClick: PropTypes.func,
+  isSignIn: PropTypes.bool,
+};

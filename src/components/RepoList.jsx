@@ -1,27 +1,25 @@
-import React, {Component} from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
-class RepoList extends Component {
-    render() {
-        return (
-            <div>
-                <ul className="list-group">
-                    {
-                        this.props.data && this.props.data.map(repo => {
-                            return (
-                                <li className="list-group-item" key={repo.id}>
-                                    {repo.name}
-                                </li>
-                            )
-                        })}
-                </ul>
-            </div>
-        );
-    }
+export default function RepoList(props) {
+  return (
+    <div>
+      <ul className="list-group">
+        {
+            props.data && props.data.map(repo => (
+              <li className="list-group-item" key={repo.id}>
+                {repo.name}
+              </li>
+            ))
+        }
+      </ul>
+    </div>
+  );
 }
 
+
 RepoList.propTypes = {
-    data: PropTypes.array.isRequired
+// eslint-disable-next-line react/forbid-prop-types
+  data: PropTypes.array.isRequired,
 };
 
-export default RepoList;
