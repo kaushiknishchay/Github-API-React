@@ -21,7 +21,7 @@ class RepoList extends Component {
 }
 
 RepoList.propTypes = {
-
+    data: PropTypes.array.isRequired
 };
 
 export default RepoList;
