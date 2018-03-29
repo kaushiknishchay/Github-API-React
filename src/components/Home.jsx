@@ -2,10 +2,12 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
+import { diff } from 'deep-object-diff';
+
 import { getUserInfo } from '../actions';
 import Profile from './Profile';
 import RepoList from './RepoList';
-import { getFeeds, getRepos } from '../service/httpFetch';
+import { getFeeds, getPublicFeeds, getRepos } from '../service/httpFetch';
 import FeedList from './FeedsList';
 
 class Home extends Component {
@@ -16,24 +18,29 @@ class Home extends Component {
       repoList: [],
       feedList: [],
       fetchedFeeds: false,
+      publicFeeds: false,
     };
     this.getUserRepos = this.getUserRepos.bind(this);
     this.handleChange = this.handleChange.bind(this);
   }
 
   componentDidMount() {
+    // if user logged in show his feed
     if (this.props.token && !this.props.user) {
       this.props.getInfo();
+    }
+
+    // if user not logged in show public feed
+    if (!this.props.token && !this.props.user) {
+      this.getPublicFeed();
     }
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    return (
-      (nextState.fetchedFeeds !== this.state.fetchedFeeds) ||
-      nextState.repoList !== this.state.repoList ||
-      nextProps.token !== this.props.token ||
-      nextProps.user !== this.props.user
-    );
+    const propsChanged = Object.keys(diff(this.props, nextProps)).length > 0;
+    const stateChanged = Object.keys(diff(this.state, nextState)).length > 0;
+
+    return ((propsChanged || stateChanged));
   }
 
   componentWillUpdate(nextProps, nextState) {
@@ -44,6 +51,10 @@ class Home extends Component {
         && this.state.fetchedFeeds === false
         && nextState.fetchedFeeds === false) {
       this.getUserFeeds(nextProps.user.login);
+    }
+
+    if (nextProps.user === null && this.state.publicFeeds === false) {
+      this.getPublicFeed();
     }
   }
 
@@ -61,6 +72,17 @@ class Home extends Component {
       this.setState({
         feedList: res.data,
         fetchedFeeds: true,
+        publicFeeds: false,
+      });
+    });
+  }
+
+  getPublicFeed() {
+    getPublicFeeds().then((res) => {
+      this.setState({
+        feedList: res.data,
+        publicFeeds: true,
+        fetchedFeeds: false,
       });
     });
   }

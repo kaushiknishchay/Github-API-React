@@ -12,7 +12,10 @@ export default function FeedList(props) {
 
             const commitObj = feed.payload.commits;
 
-            const commitMsg = commitObj !== undefined ? commitObj[0].message : '';
+            let commitMsg = '';
+            if (commitObj !== undefined) {
+                if (commitObj[0] !== undefined) { commitMsg = commitObj[0].message; }
+            }
 
             return (
               <a
