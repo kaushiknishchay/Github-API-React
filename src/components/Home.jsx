@@ -18,10 +18,12 @@ class Home extends Component {
       repoList: [],
       feedList: [],
       fetchedFeeds: false,
-      publicFeeds: false,
+      publicFeeds: true,
     };
+    this.homeRef = null;
     this.getUserRepos = this.getUserRepos.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.getPublicFeed = this.getPublicFeed.bind(this);
   }
 
   componentDidMount() {
@@ -31,10 +33,11 @@ class Home extends Component {
     }
 
     // if user not logged in show public feed
-    if (!this.props.token && !this.props.user) {
+    if (!this.props.token) {
       this.getPublicFeed();
     }
   }
+
 
   shouldComponentUpdate(nextProps, nextState) {
     const propsChanged = Object.keys(diff(this.props, nextProps)).length > 0;
@@ -58,6 +61,10 @@ class Home extends Component {
     }
   }
 
+  componentWillUnmount() {
+    this.homeRef = null;
+  }
+
 
   getUserRepos() {
     getRepos(this.state.username).then((res) => {
@@ -78,36 +85,45 @@ class Home extends Component {
   }
 
   getPublicFeed() {
-    getPublicFeeds().then((res) => {
-      this.setState({
-        feedList: res.data,
-        publicFeeds: true,
-        fetchedFeeds: false,
+    if (this.homeRef) {
+      getPublicFeeds().then((res) => {
+        this.setState({
+          feedList: res.data,
+          publicFeeds: true,
+          fetchedFeeds: false,
+        });
+      }).catch((err) => {
+        console.log(err);
       });
-    });
+    }
   }
 
-  handleChange(e) {
-    this.setState({
-      username: e.target.value,
-    });
-  }
+    count = 0;
+
+    handleChange(e) {
+      this.setState({
+        username: e.target.value,
+      });
+    }
 
 
-  render() {
-    const data = this.props.user;
-    const { repoList, feedList } = this.state;
-    return (
-      <div className="row">
-        <div className="col-lg-12">
-          <br />
-          {data && <Profile data={data} />}
+    render() {
+      const data = this.props.user;
+      this.count = this.count + 1;
+      // console.log(this.count, 'times');
 
-          <br />
-          <FeedList feeds={feedList} />
-          <br />
+      const { repoList, feedList } = this.state;
+      return (
+        <div className="row" ref={(re) => { this.homeRef = re; }}>
+          <div className="col-lg-12">
+            <br />
+            {data && <Profile data={data} />}
 
-          {
+            <br />
+            <FeedList feeds={feedList} />
+            <br />
+
+            {
               data &&
               <div className="input-group mr-3">
                 <div className="input-group-prepend">
@@ -131,11 +147,11 @@ class Home extends Component {
               </div>
           }
 
-          <RepoList data={repoList} />
+            <RepoList data={repoList} />
+          </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 }
 
 Home.defaultProps = {
