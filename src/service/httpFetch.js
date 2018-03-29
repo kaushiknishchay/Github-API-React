@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ROOT_URL, TOKEN_URL } from '../lib/constants';
+import {ROOT_URL, TOKEN_URL} from '../lib/constants';
 
 const getDefaultConfig = () => ({
   // use a function so it doesn't cache the config info

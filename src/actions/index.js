@@ -1,4 +1,7 @@
+import * as Raven from 'raven-js';
+
 import { getAuthToken, getUserDetails } from '../service/httpFetch';
+import { sentryExtra } from '../lib/utils';
 
 export const SIGNIN_REQUEST = 'SIGNIN_REQUEST';
 export const SIGNED_IN = 'SIGNED_IN';
@@ -12,23 +15,22 @@ export function beginSignIn(authCode) {
     };
   }
 
-
   function success(token) {
     return {
       type: SIGNED_IN,
       token,
     };
   }
+
   return (dispatch) => {
     dispatch(start());
 
     getAuthToken(authCode).then((res) => {
-      // console.log(res.data);
       const authToken = res.data.token;
       localStorage.setItem('auth-token', authToken);
       dispatch(success(authToken));
     }).catch((err) => {
-      console.log(err);
+      Raven.captureException(err, sentryExtra('Error while fetching auth token'));
     });
   };
 }
@@ -45,10 +47,10 @@ export function getUserInfo() {
     getUserDetails().then((res) => {
       // console.log(res.data);
       dispatch(success(res.data));
-    }, (err) => {
-      console.error(err);
     }).catch((err) => {
-      console.error(err);
+      Raven.captureMessage('Error while fetching user Info', {
+        level: 'error',
+      }).captureException(err);
     });
   };
 }
