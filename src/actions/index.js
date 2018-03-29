@@ -48,9 +48,7 @@ export function getUserInfo() {
       // console.log(res.data);
       dispatch(success(res.data));
     }).catch((err) => {
-      Raven.captureMessage('Error while fetching user Info', {
-        level: 'error',
-      }).captureException(err);
+      Raven.captureException(err, sentryExtra('Error while fetching user Info'));
     });
   };
 }
