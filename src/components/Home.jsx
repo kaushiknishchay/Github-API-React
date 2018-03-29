@@ -5,7 +5,8 @@ import PropTypes from 'prop-types';
 import { getUserInfo } from '../actions';
 import Profile from './Profile';
 import RepoList from './RepoList';
-import { getRepos } from '../service/httpFetch';
+import { getFeeds, getRepos } from '../service/httpFetch';
+import FeedList from './FeedsList';
 
 class Home extends Component {
   constructor(props) {
@@ -13,6 +14,8 @@ class Home extends Component {
     this.state = {
       username: '',
       repoList: [],
+      feedList: [],
+      fetchedFeeds: false,
     };
     this.getUserRepos = this.getUserRepos.bind(this);
     this.handleChange = this.handleChange.bind(this);
@@ -25,27 +28,42 @@ class Home extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    return (nextState.repoList !== this.state.repoList ||
-            nextProps.token !== this.props.token ||
-            nextProps.user !== this.props.user);
+    return (
+      (nextState.fetchedFeeds !== this.state.fetchedFeeds) ||
+      nextState.repoList !== this.state.repoList ||
+      nextProps.token !== this.props.token ||
+      nextProps.user !== this.props.user
+    );
   }
 
-  componentWillUpdate(nextProps) {
+  componentWillUpdate(nextProps, nextState) {
     if (nextProps.token && !nextProps.user) {
       this.props.getInfo();
+    }
+    if (nextProps.user
+        && this.state.fetchedFeeds === false
+        && nextState.fetchedFeeds === false) {
+      this.getUserFeeds(nextProps.user.login);
     }
   }
 
 
   getUserRepos() {
     getRepos(this.state.username).then((res) => {
-      // console.log(res.data);
       this.setState({
         repoList: res.data,
       });
     });
   }
 
+  getUserFeeds(login) {
+    getFeeds(login).then((res) => {
+      this.setState({
+        feedList: res.data,
+        fetchedFeeds: true,
+      });
+    });
+  }
 
   handleChange(e) {
     this.setState({
@@ -56,35 +74,40 @@ class Home extends Component {
 
   render() {
     const data = this.props.user;
-    const { repoList } = this.state;
-    // console.log(data);
+    const { repoList, feedList } = this.state;
     return (
       <div className="row">
         <div className="col-lg-12">
           <br />
           {data && <Profile data={data} />}
+
           <br />
+          <FeedList feeds={feedList} />
+          <br />
+
           {
-                        data &&
-                        <div className="input-group mr-3">
-                          <div className="input-group-prepend">
-                            <span className="input-group-text" id="inputGroup-sizing-default">Enter Username</span>
-                          </div>
-                          <input
-                            type="text"
-                            className="form-control"
-                            aria-label="Default"
-                            onChange={this.handleChange}
-                          />
-                          <button
-                            type="button"
-                            className="ml-3 btn btn-primary"
-                            onClick={this.getUserRepos}
-                          >
+              data &&
+              <div className="input-group mr-3">
+                <div className="input-group-prepend">
+                  <span className="input-group-text" id="inputGroup-sizing-default">
+                      Enter Username
+                  </span>
+                </div>
+                <input
+                  type="text"
+                  className="form-control"
+                  aria-label="Default"
+                  onChange={this.handleChange}
+                />
+                <button
+                  type="button"
+                  className="ml-3 btn btn-primary"
+                  onClick={this.getUserRepos}
+                >
                                 Search
-                          </button>
-                        </div>
-                    }
+                </button>
+              </div>
+          }
 
           <RepoList data={repoList} />
         </div>
