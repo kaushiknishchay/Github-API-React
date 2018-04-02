@@ -14,6 +14,7 @@ class Callback extends Component {
     }
     return url.match(/[&?]code=([\w/-]+)/)[1];
   }
+
   //
   // static getStateCode(url) {
   //   const error = url.match(/[&?]error=([^&]+)/);
@@ -35,16 +36,16 @@ class Callback extends Component {
   }
 
   shouldComponentUpdate(nextProps) {
-    return nextProps.isSignIn !== this.props.isSignIn;
+    return (nextProps.isSignIn !== this.props.isSignIn);
   }
 
   render() {
     return (
       <div>
-                Redirecting...
+        Redirecting...
         {
-            this.props.isLoggedIn
-            && <Redirect to="/" />
+          this.props.isLoggedIn
+          && <Redirect to="/" />
         }
       </div>
     );

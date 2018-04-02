@@ -3,7 +3,7 @@ import { SIGN_OUT, SIGNED_IN, SIGNIN_REQUEST, USER_DATA } from '../actions';
 
 const initialState = fromJS({
   loginRequest: null,
-  token: localStorage.getItem('auth-token'),
+  token: localStorage.getItem('auth-token') || null,
   user: null,
 });
 

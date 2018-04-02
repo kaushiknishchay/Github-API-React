@@ -29,6 +29,22 @@ export function getUserDetails() {
   });
 }
 
+export function getPublicFeeds() {
+  return new Promise((resolve, reject) => {
+    resolve({
+      data: [{
+        id: 1,
+        type: 'PushEvent',
+        created_at: '2018-03-29T11:08:09Z',
+        payload: {
+          commits: {
+
+          },
+        },
+      }],
+    });
+  });
+}
 //
 // // noinspection JSUnusedGlobalSymbols
 // export function getRepos(username) {
