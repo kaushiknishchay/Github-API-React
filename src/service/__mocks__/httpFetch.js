@@ -8,7 +8,11 @@ export function getAuthToken(code) {
         },
       });
     } else {
-      reject('Token fetch failed');
+      reject({
+        data: {
+          error: 'bad_code',
+        },
+      });
     }
   });
 }

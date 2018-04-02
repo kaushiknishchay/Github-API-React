@@ -10,3 +10,6 @@ export const AUTH_URL = `https://github.com/login/oauth/authorize?client_id=${CL
 export const TOKEN_URL = 'http://localhost:9999/authenticate';
 
 export const USER_DETAIL_URL = 'https://api.github.com/user';
+
+export const USER_FEEDS_ERROR = 1;
+export const USER_REPO_ERROR = 2;
