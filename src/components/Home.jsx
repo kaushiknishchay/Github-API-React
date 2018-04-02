@@ -3,14 +3,16 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
+import { diff } from 'deep-object-diff';
 import * as Raven from 'raven-js';
+
 
 import { getUserInfo } from '../actions';
 import Profile from './Profile';
 import RepoList from './RepoList';
-import { getFeeds, getRepos } from '../service/httpFetch';
+import { getFeeds, getPublicFeeds, getRepos } from '../service/httpFetch';
 import FeedList from './FeedsList';
-import { sentryExtra } from '../lib/utils';
+// import { sentryExtra } from '../lib/utils';
 import { USER_FEEDS_ERROR, USER_REPO_ERROR } from '../lib/constants';
 
 class Home extends Component {
@@ -21,25 +23,33 @@ class Home extends Component {
       repoList: [],
       feedList: [],
       fetchedFeeds: false,
+      publicFeeds: true,
       isError: false,
     };
+    this.homeRef = null;
     this.getUserRepos = this.getUserRepos.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.getPublicFeed = this.getPublicFeed.bind(this);
   }
 
   componentDidMount() {
+    // if user logged in show his feed
     if (this.props.token && !this.props.user) {
       this.props.getInfo();
     }
+
+    // if user not logged in show public feed
+    if (!this.props.token) {
+      this.getPublicFeed();
+    }
   }
 
+
   shouldComponentUpdate(nextProps, nextState) {
-    return (
-      (nextState.fetchedFeeds !== this.state.fetchedFeeds) ||
-            nextState.repoList !== this.state.repoList ||
-            nextProps.token !== this.props.token ||
-            nextProps.user !== this.props.user
-    );
+    const propsChanged = Object.keys(diff(this.props, nextProps)).length > 0;
+    const stateChanged = Object.keys(diff(this.state, nextState)).length > 0;
+
+    return ((propsChanged || stateChanged));
   }
 
   componentWillUpdate(nextProps, nextState) {
@@ -51,6 +61,14 @@ class Home extends Component {
             && nextState.fetchedFeeds === false) {
       this.getUserFeeds(nextProps.user.login);
     }
+
+    if (nextProps.user === null && this.state.publicFeeds === false) {
+      this.getPublicFeed();
+    }
+  }
+
+  componentWillUnmount() {
+    this.homeRef = null;
   }
 
   getUserRepos() {
@@ -71,6 +89,7 @@ class Home extends Component {
       this.setState({
         feedList: res.data,
         fetchedFeeds: true,
+        publicFeeds: false,
         // eslint-disable-next-line no-unused-vars
       });
     }).catch((err) => {
@@ -78,41 +97,58 @@ class Home extends Component {
       this.setState({
         isError: USER_FEEDS_ERROR,
       });
+    }).catch((err) => {
+      console.log(err);
     });
   }
 
+  getPublicFeed() {
+    if (this.homeRef) {
+      getPublicFeeds().then((res) => {
+        this.setState({
+          feedList: res.data,
+          publicFeeds: true,
+          fetchedFeeds: false,
+        });
+      }).catch((err) => {
+        console.log(err);
+      });
+    }
+  }
   // eslint-disable-next-line class-methods-use-this
   componentDidCatch(error, errorInfo) {
     Raven.captureException(error, { extra: errorInfo });
   }
 
-  handleChange(e) {
-    this.setState({
-      username: e.target.value,
-    });
-  }
+    count = 0;
+
+    handleChange(e) {
+      this.setState({
+        username: e.target.value,
+      });
+    }
 
 
-  render() {
-    const data = this.props.user;
-    const { repoList, feedList } = this.state;
-    const feedError = this.state.isError === USER_FEEDS_ERROR;
-    const repoError = this.state.isError === USER_REPO_ERROR;
+    render() {
+      const data = this.props.user;
+      const { repoList, feedList } = this.state;
+      const feedError = this.state.isError === USER_FEEDS_ERROR;
+      const repoError = this.state.isError === USER_REPO_ERROR;
 
-    return (
-      <div className="row">
-        <div className="col-lg-12">
-          <br />
-          {data && <Profile data={data} />}
+      return (
+        <div className="row">
+          <div className="col-lg-12">
+            <br />
+            {data && <Profile data={data} />}
 
-          <br />
-          { feedError && <div><h1>Please try again.</h1> <p>Can not fetch feeds.</p></div> }
+            <br />
+            { feedError && <div><h1>Please try again.</h1> <p>Can not fetch feeds.</p></div> }
 
-          <FeedList feeds={feedList} />
+            <FeedList feeds={feedList} />
 
-          <br />
+            <br />
 
-          {
+            {
                         data &&
                         <div className="input-group mr-3">
                           <div className="input-group-prepend">
@@ -136,13 +172,13 @@ class Home extends Component {
                         </div>
                     }
 
-          { repoError && <div><h1>Please try again.</h1> <p>Can not repository list.</p></div> }
+            { repoError && <div><h1>Please try again.</h1> <p>Can not repository list.</p></div> }
 
-          <RepoList data={repoList} />
+            <RepoList data={repoList} />
+          </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 }
 
 Home.defaultProps = {
