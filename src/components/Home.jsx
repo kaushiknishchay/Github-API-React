@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -10,6 +11,7 @@ import RepoList from './RepoList';
 import { getFeeds, getRepos } from '../service/httpFetch';
 import FeedList from './FeedsList';
 import { sentryExtra } from '../lib/utils';
+import { USER_FEEDS_ERROR, USER_REPO_ERROR } from '../lib/constants';
 
 class Home extends Component {
   constructor(props) {
@@ -19,6 +21,7 @@ class Home extends Component {
       repoList: [],
       feedList: [],
       fetchedFeeds: false,
+      isError: false,
     };
     this.getUserRepos = this.getUserRepos.bind(this);
     this.handleChange = this.handleChange.bind(this);
@@ -56,7 +59,10 @@ class Home extends Component {
         repoList: res.data,
       });
     }).catch((err) => {
-      Raven.captureException(err, sentryExtra('Error during fetching user repos'));
+      // Raven.captureException(err, sentryExtra('Error during fetching user repos'));
+      this.setState({
+        isError: USER_REPO_ERROR,
+      });
     });
   }
 
@@ -65,9 +71,13 @@ class Home extends Component {
       this.setState({
         feedList: res.data,
         fetchedFeeds: true,
+        // eslint-disable-next-line no-unused-vars
       });
     }).catch((err) => {
-      Raven.captureException(err, sentryExtra('Error while fetching user feeds'));
+      // Raven.captureException(err, sentryExtra('Error while fetching user feeds'));
+      this.setState({
+        isError: USER_FEEDS_ERROR,
+      });
     });
   }
 
@@ -86,6 +96,9 @@ class Home extends Component {
   render() {
     const data = this.props.user;
     const { repoList, feedList } = this.state;
+    const feedError = this.state.isError === USER_FEEDS_ERROR;
+    const repoError = this.state.isError === USER_REPO_ERROR;
+
     return (
       <div className="row">
         <div className="col-lg-12">
@@ -93,7 +106,10 @@ class Home extends Component {
           {data && <Profile data={data} />}
 
           <br />
+          { feedError && <div><h1>Please try again.</h1> <p>Can not fetch feeds.</p></div> }
+
           <FeedList feeds={feedList} />
+
           <br />
 
           {
@@ -119,6 +135,8 @@ class Home extends Component {
                           </button>
                         </div>
                     }
+
+          { repoError && <div><h1>Please try again.</h1> <p>Can not repository list.</p></div> }
 
           <RepoList data={repoList} />
         </div>
