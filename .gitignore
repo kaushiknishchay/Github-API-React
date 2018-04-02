@@ -8,6 +8,8 @@
 
 .idea/
 
+.coveralls.yml
+
 # production
 /build
 
