@@ -1,8 +1,14 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import Header from '../../components/Header';
+import HeaderContainer from '../Header';
 
 describe('Header Container Component', () => {
+  it('should render', () => {
+    const wrapper = shallow(<HeaderContainer />);
+    expect(wrapper.length).toBe(1);
+  });
+
   it('should show Sign In Button', () => {
     const onClick = jest.fn();
 
