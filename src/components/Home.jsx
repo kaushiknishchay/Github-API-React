@@ -81,6 +81,8 @@ class Home extends Component {
         fetchedFeeds: true,
         publicFeeds: false,
       });
+    }).catch((err) => {
+      console.log(err);
     });
   }
 
