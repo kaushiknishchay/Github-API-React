@@ -19,3 +19,9 @@ body {
 .flex-90{
     flex: 90;
 }
+.error{
+    text-align: center;
+    width: 100%;
+    background: #fdfdfd;
+    padding: 40px;
+}
