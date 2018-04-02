@@ -13,7 +13,7 @@ import RepoList from './RepoList';
 import { getFeeds, getPublicFeeds, getRepos } from '../service/httpFetch';
 import FeedList from './FeedsList';
 // import { sentryExtra } from '../lib/utils';
-import { USER_FEEDS_ERROR, USER_REPO_ERROR } from '../lib/constants';
+import { PUBLIC_FEEDS_ERROR, USER_FEEDS_ERROR, USER_REPO_ERROR } from '../lib/constants';
 
 class Home extends Component {
   constructor(props) {
@@ -97,8 +97,6 @@ class Home extends Component {
       this.setState({
         isError: USER_FEEDS_ERROR,
       });
-    }).catch((err) => {
-      console.log(err);
     });
   }
 
@@ -111,7 +109,9 @@ class Home extends Component {
           fetchedFeeds: false,
         });
       }).catch((err) => {
-        console.log(err);
+        this.setState({
+          isError: PUBLIC_FEEDS_ERROR,
+        });
       });
     }
   }
@@ -134,15 +134,17 @@ class Home extends Component {
       const { repoList, feedList } = this.state;
       const feedError = this.state.isError === USER_FEEDS_ERROR;
       const repoError = this.state.isError === USER_REPO_ERROR;
+      const publicFeedError = this.state.isError === PUBLIC_FEEDS_ERROR;
 
       return (
-        <div className="row">
+        <div className="row" ref={(re) => { this.homeRef = re; }}>
           <div className="col-lg-12">
             <br />
             {data && <Profile data={data} />}
 
             <br />
-            { feedError && <div><h1>Please try again.</h1> <p>Can not fetch feeds.</p></div> }
+            { feedError && <div className="error"><h1>Please try again.</h1> <p>Can not fetch feeds.</p></div> }
+            { publicFeedError && <div className="error"><h1>Please try again.</h1> <p>Can not fetch feeds.</p></div> }
 
             <FeedList feeds={feedList} />
 
@@ -172,7 +174,7 @@ class Home extends Component {
                         </div>
                     }
 
-            { repoError && <div><h1>Please try again.</h1> <p>Can not repository list.</p></div> }
+            { repoError && <div className="error"><h1>Please try again.</h1> <p>Can not repository list.</p></div> }
 
             <RepoList data={repoList} />
           </div>
