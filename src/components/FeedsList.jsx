@@ -21,6 +21,7 @@ const FeedList = props => (
             }
             const commitObj = feed.payload.commits;
 
+            // try to refactor and reduce code size of below checks
             if (commitObj !== undefined) {
               if (commitObj[0] !== undefined) {
                 commitMsg = commitObj[0].message;
