@@ -17,16 +17,15 @@ class HeaderContainer extends React.Component {
 
 
   // eslint-disable-next-line no-unused-vars
-  shouldComponentUpdate(nextProps, nextState) {
-    return nextProps.isSignIn !== this.props.isSignIn;
-  }
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   return nextProps.isSignIn !== this.props.isSignIn;
+  // }
 
 
   onClick() {
-    const token = localStorage.getItem('github-token');
-    if (this.props.isSignIn && token !== undefined && token !== '') {
+    const token = localStorage.getItem('auth-token');
+    if (this.props.isSignIn && token !== undefined) {
       try {
-        localStorage.removeItem('github-token');
         localStorage.removeItem('auth-token');
       } catch (e) {
         console.error('Couldn\'t delete token from localStorage.');
@@ -62,10 +61,11 @@ HeaderContainer.propTypes = {
 };
 
 function mapState(state) {
+  const isAuthenticated = state.getIn(['github', 'isAuthenticated']);
   const token = state.getIn(['github', 'token']);
   return {
     token,
-    isSignIn: (token !== undefined && token !== null),
+    isSignIn: isAuthenticated,
   };
 }
 

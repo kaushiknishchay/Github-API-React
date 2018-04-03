@@ -3,29 +3,25 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
-import { diff } from 'deep-object-diff';
 import * as Raven from 'raven-js';
 
 
-import { getUserInfo } from '../actions';
+import { getUserFeeds, getUserInfo } from '../actions';
 import Profile from './Profile';
 import RepoList from './RepoList';
-import { getFeeds, getPublicFeeds, getRepos } from '../service/httpFetch';
+import { getPublicFeeds, getRepos } from '../service/httpFetch';
 import FeedList from './FeedsList';
-// import { sentryExtra } from '../lib/utils';
-import { PUBLIC_FEEDS_ERROR, USER_FEEDS_ERROR, USER_REPO_ERROR } from '../lib/constants';
 import SearchInput from './SearchInput';
+import { PUBLIC_FEEDS_ERROR, USER_REPO_ERROR } from '../lib/constants';
 
 class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      username: '',
+      searchRepoUsername: '',
       repoList: [],
       feedList: [],
-      fetchedFeeds: false,
-      publicFeeds: true,
-      isError: false,
+      isError: 0,
     };
     this.homeRef = null;
     this.getUserRepos = this.getUserRepos.bind(this);
@@ -34,36 +30,36 @@ class Home extends Component {
   }
 
   componentDidMount() {
-    // if user logged in show his feed
-    if (this.props.token && !this.props.user && localStorage.getItem('auth-token') !== undefined) {
+    // if user logged in, show his feed
+    if (this.props.isAuthenticated && !this.props.user) {
       this.props.getInfo();
     }
 
-    // if user not logged in show public feed
-    if (!this.props.token) {
+    // if user not logged in, show public feed
+    if (!this.props.isAuthenticated) {
       this.getPublicFeed();
     }
   }
 
-
-  shouldComponentUpdate(nextProps, nextState) {
-    const propsChanged = Object.keys(diff(this.props, nextProps)).length > 0;
-    const stateChanged = Object.keys(diff(this.state, nextState)).length > 0;
-
-    return ((propsChanged || stateChanged));
-  }
-
   componentWillUpdate(nextProps, nextState) {
-    if (nextProps.token && !nextProps.user) {
+    // user just signed in, and data isn't fetched so fetch data
+    if (nextProps.isAuthenticated && !nextProps.user) {
       this.props.getInfo();
     }
-    if (nextProps.user
-            && this.state.fetchedFeeds === false
-            && nextState.fetchedFeeds === false) {
-      this.getUserFeeds(nextProps.user.login);
+
+    // user is logged in, user data is fetched, so fetch user feeds list
+    if (nextProps.isAuthenticated && nextProps.user &&
+      (nextProps.userFeedsError === null && nextProps.userFeeds === null)) {
+      // if feed list empty and if there was an error in fetching last time then dont fetch
+      this.props.getUserFeeds(nextProps.user.login);
     }
 
-    if (nextProps.user === null && this.state.publicFeeds === false) {
+    // user has signed out, fetched public feeds
+    if (!nextProps.isAuthenticated
+      && nextState.feedList !== null
+      && (!nextState.feedList.length > 0 && nextState.isError !== PUBLIC_FEEDS_ERROR)) {
+      // if no error came in fetching public feeds then fetch them else stop
+
       this.getPublicFeed();
     }
   }
@@ -73,7 +69,7 @@ class Home extends Component {
   }
 
   getUserRepos() {
-    getRepos(this.state.username).then((res) => {
+    getRepos(this.state.searchRepoUsername).then((res) => {
       this.setState({
         repoList: res.data,
       });
@@ -85,29 +81,12 @@ class Home extends Component {
     });
   }
 
-  getUserFeeds(login) {
-    getFeeds(`${login}`).then((res) => {
-      this.setState({
-        feedList: res.data,
-        fetchedFeeds: true,
-        publicFeeds: false,
-        // eslint-disable-next-line no-unused-vars
-      });
-    }).catch((err) => {
-      // Raven.captureException(err, sentryExtra('Error while fetching user feeds'));
-      this.setState({
-        isError: USER_FEEDS_ERROR,
-      });
-    });
-  }
 
   getPublicFeed() {
     if (this.homeRef) {
       getPublicFeeds().then((res) => {
         this.setState({
           feedList: res.data,
-          publicFeeds: true,
-          fetchedFeeds: false,
         });
       }).catch((err) => {
         this.setState({
@@ -116,49 +95,56 @@ class Home extends Component {
       });
     }
   }
+
   // eslint-disable-next-line class-methods-use-this
   componentDidCatch(error, errorInfo) {
     Raven.captureException(error, { extra: errorInfo });
   }
 
-    count = 0;
+  handleChange = e => this.setState({
+    searchRepoUsername: e.target.value,
+  });
 
-    handleChange(e) {
-      this.setState({
-        username: e.target.value,
-      });
+  render() {
+    const {
+      user: data, userFeedsError, isAuthenticated,
+    } = this.props;
+
+    let { userFeeds } = this.props;
+
+    const { repoList, isError, feedList: publicFeedList } = this.state;
+
+    // convert userFeed from a Immutable Map Object to a JS Object
+    if (userFeeds) {
+      userFeeds = userFeeds.toJS();
     }
+    const feedList = isAuthenticated ? userFeeds : publicFeedList;
 
 
-    render() {
-      const data = this.props.user;
-      const { token } = this.props;
-      const { repoList, feedList } = this.state;
-      const feedError = this.state.isError === USER_FEEDS_ERROR;
-      const repoError = this.state.isError === USER_REPO_ERROR;
-      const publicFeedError = this.state.isError === PUBLIC_FEEDS_ERROR;
+    const feedError = isError === PUBLIC_FEEDS_ERROR || userFeedsError !== null;
+    const repoError = isError === USER_REPO_ERROR;
 
-      return (
-        <div className="row" ref={(re) => { this.homeRef = re; }}>
-          <div className="col-lg-12">
-            <br />
-            {data && <Profile data={data} />}
+    return (
+      <div className="row" ref={(re) => { this.homeRef = re; }}>
+        <div className="col-lg-12">
+          <br />
+          {data && <Profile data={data} />}
 
-            <br />
-            <ul className="nav nav-tabs nav-justified" id="myTab" role="tablist">
-              <li className="nav-item">
-                <a
-                  className="nav-link active"
-                  id="feeds-tab"
-                  data-toggle="tab"
-                  href="#feeds"
-                  role="tab"
-                  aria-controls="feeds"
-                  aria-selected="true"
-                >Home
-                </a>
-              </li>
-              {
+          <br />
+          <ul className="nav nav-tabs nav-justified" id="myTab" role="tablist">
+            <li className="nav-item">
+              <a
+                className="nav-link active"
+                id="feeds-tab"
+                data-toggle="tab"
+                href="#feeds"
+                role="tab"
+                aria-controls="feeds"
+                aria-selected="true"
+              >Home
+              </a>
+            </li>
+            {
                     data &&
                     <li className="nav-item">
                       <a
@@ -173,7 +159,7 @@ class Home extends Component {
                       </a>
                     </li>
               }
-              {
+            {
                     data &&
                     <li className="nav-item">
                       <a
@@ -188,36 +174,32 @@ class Home extends Component {
                       </a>
                     </li>
                 }
-            </ul>
-            <br />
-            <div className="tab-content" id="myTabContent">
+          </ul>
+          <br />
+          <div className="tab-content" id="myTabContent">
 
-              <div className="tab-pane fade show active" id="feeds" role="tabpanel" aria-labelledby="feeds-tab">
-                { (!token && publicFeedError) &&
-                  <div className="error"><h1>Please try again.</h1> <p>Can not fetch feeds.</p></div>
-                }
-                { (token && feedError) &&
-                  <div className="error"><h1>Please try again.</h1> <p>Can not fetch feeds.</p></div>
-                }
-                <FeedList feeds={feedList} />
+            <div className="tab-pane fade show active" id="feeds" role="tabpanel" aria-labelledby="feeds-tab">
+              {feedError && <div className="error"><h1>Please try again.</h1> <p>Can not fetch feeds.</p></div>}
 
-              </div>
+              <FeedList feeds={feedList} />
 
-              <div className="tab-pane fade" id="search" role="tabpanel" aria-labelledby="search-tab">
+            </div>
 
-                {
+            <div className="tab-pane fade" id="search" role="tabpanel" aria-labelledby="search-tab">
+
+              {
                   data &&
                   <SearchInput onClick={this.getUserRepos} onChange={this.handleChange} />
                 }
 
-                { repoError &&
-                  <div className="error"><h1>Please try again.</h1> <p>Cant fetch repository list.</p></div>
+              { repoError &&
+              <div className="error"><h1>Please try again.</h1> <p>Cant fetch repository list.</p></div>
                 }
 
-                <RepoList data={repoList} />
-              </div>
-              <div className="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab" >
-                {
+              <RepoList data={repoList} />
+            </div>
+            <div className="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab" >
+              {
                   data &&
                   <ul className="list-group list-group-flush">
                     <li className="list-group-item"><h1>{data.name}</h1></li>
@@ -229,33 +211,45 @@ class Home extends Component {
                     <li className="list-group-item">Location: {data.location}</li>
                   </ul>
                 }
-              </div>
-
             </div>
 
           </div>
+
         </div>
-      );
-    }
+      </div>
+    );
+  }
 }
 
 Home.defaultProps = {
-  token: undefined,
-  user: {},
+  // token: null,
+  user: null,
+  userFeeds: null,
+  userFeedsError: null,
   getInfo: () => null,
+  getUserFeeds: () => null,
+  isAuthenticated: localStorage.getItem('auth-token') !== undefined,
 };
 
 Home.propTypes = {
-  token: PropTypes.string,
+  // token: PropTypes.string,
   // eslint-disable-next-line react/forbid-prop-types
   user: PropTypes.object,
+  // eslint-disable-next-line react/forbid-prop-types
+  userFeeds: PropTypes.object,
+  userFeedsError: PropTypes.string,
   getInfo: PropTypes.func,
+  getUserFeeds: PropTypes.func,
+  isAuthenticated: PropTypes.bool,
 };
 
 function mapState(state) {
   return {
     user: state.getIn(['github', 'user']),
     token: state.getIn(['github', 'token']),
+    userFeeds: state.getIn(['github', 'userFeeds']),
+    userFeedsError: state.getIn(['github', 'userFeedsError']),
+    isAuthenticated: state.getIn(['github', 'isAuthenticated']),
   };
 }
 
@@ -263,6 +257,7 @@ function mapState(state) {
 function mapDispatch(dispatch) {
   return bindActionCreators({
     getInfo: getUserInfo,
+    getUserFeeds,
   }, dispatch);
 }
 
