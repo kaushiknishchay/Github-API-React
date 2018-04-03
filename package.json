@@ -47,7 +47,7 @@
     "test": "react-scripts test --env=jsdom --verbose",
     "eject": "react-scripts eject",
     "test:coverage": "react-scripts test --env=jsdom --coverage && cat ./coverage/lcov.info > ./node_modules/coveralls/bin/coveralls.js",
-    "commit": "yarn precommit && git-cz",
+    "commit": "git-cz",
     "precommit": "yarn lint",
     "lint": "(eslint --ext=js --ext=jsx . ) && echo Lint Passed! ALL Clear! ❤"
   },

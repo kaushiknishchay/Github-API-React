@@ -57,8 +57,8 @@ class Home extends Component {
       this.props.getInfo();
     }
     if (nextProps.user
-            && this.state.fetchedFeeds === false
-            && nextState.fetchedFeeds === false) {
+      && this.state.fetchedFeeds === false
+      && nextState.fetchedFeeds === false) {
       this.getUserFeeds(nextProps.user.login);
     }
 
@@ -115,72 +115,73 @@ class Home extends Component {
       });
     }
   }
+
   // eslint-disable-next-line class-methods-use-this
   componentDidCatch(error, errorInfo) {
     Raven.captureException(error, { extra: errorInfo });
   }
 
-    count = 0;
+  handleChange = e => this.setState({
+    username: e.target.value,
+  });
 
-    handleChange(e) {
-      this.setState({
-        username: e.target.value,
-      });
-    }
+  render() {
+    const data = this.props.user;
+    const { repoList, feedList } = this.state;
+    const feedError = this.state.isError === USER_FEEDS_ERROR
+          || this.state.isError === PUBLIC_FEEDS_ERROR;
+    const repoError = this.state.isError === USER_REPO_ERROR;
 
+    return (
+      <div
+        className="row"
+        ref={(re) => {
+          this.homeRef = re;
+        }}
+      >
+        <div className="col-lg-12">
+          <br />
+          {data && <Profile data={data} />}
 
-    render() {
-      const data = this.props.user;
-      const { repoList, feedList } = this.state;
-      const feedError = this.state.isError === USER_FEEDS_ERROR;
-      const repoError = this.state.isError === USER_REPO_ERROR;
-      const publicFeedError = this.state.isError === PUBLIC_FEEDS_ERROR;
+          <br />
+          {feedError && <div className="error"><h1>Please try again.</h1> <p>Can not fetch feeds.</p></div>}
 
-      return (
-        <div className="row" ref={(re) => { this.homeRef = re; }}>
-          <div className="col-lg-12">
-            <br />
-            {data && <Profile data={data} />}
+          <FeedList feeds={feedList} />
 
-            <br />
-            { feedError && <div className="error"><h1>Please try again.</h1> <p>Can not fetch feeds.</p></div> }
-            { publicFeedError && <div className="error"><h1>Please try again.</h1> <p>Can not fetch feeds.</p></div> }
+          <br />
 
-            <FeedList feeds={feedList} />
+          {
+            data &&
+            <div className="input-group mr-3">
+              <div className="input-group-prepend">
+                <span className="input-group-text" id="inputGroup-sizing-default">
+                 Enter Username
+                </span>
+              </div>
+              <input
+                type="text"
+                className="form-control"
+                aria-label="Default"
+                onChange={this.handleChange}
+              />
+              <button
+                type="button"
+                className="ml-3 btn btn-primary"
+                onClick={this.getUserRepos}
+              >
+                Search
+              </button>
+            </div>
+          }
 
-            <br />
+          {repoError &&
+          <div className="error"><h1>Please try again.</h1> <p>Can not repository list.</p></div>}
 
-            {
-                        data &&
-                        <div className="input-group mr-3">
-                          <div className="input-group-prepend">
-                            <span className="input-group-text" id="inputGroup-sizing-default">
-                      Enter Username
-                            </span>
-                          </div>
-                          <input
-                            type="text"
-                            className="form-control"
-                            aria-label="Default"
-                            onChange={this.handleChange}
-                          />
-                          <button
-                            type="button"
-                            className="ml-3 btn btn-primary"
-                            onClick={this.getUserRepos}
-                          >
-                                Search
-                          </button>
-                        </div>
-                    }
-
-            { repoError && <div className="error"><h1>Please try again.</h1> <p>Can not repository list.</p></div> }
-
-            <RepoList data={repoList} />
-          </div>
+          <RepoList data={repoList} />
         </div>
-      );
-    }
+      </div>
+    );
+  }
 }
 
 Home.defaultProps = {
