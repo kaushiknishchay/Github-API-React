@@ -77,7 +77,6 @@ export function getUserFeeds(login) {
   }
 
   function error(err) {
-
     return {
       type: USER_FEEDS_ERROR,
       error: err,

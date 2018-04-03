@@ -14,6 +14,9 @@ describe('github reducer', () => {
       loginRequest: null,
       token: null,
       user: null,
+      isAuthenticated: false,
+      userFeeds: null,
+      userFeedsError: null,
     });
   });
 
@@ -28,17 +31,23 @@ describe('github reducer', () => {
       loginRequest: true,
       token: null,
       user: null,
+      isAuthenticated: false,
+      userFeeds: null,
+      userFeedsError: null,
     }));
   });
 
   it('==> should Login', () => {
     expect(gitHub(initialState, {
       type: SIGNED_IN,
-      token: '',
+      token: 'i-got-token',
     })).toEqual(fromJS({
       loginRequest: false,
-      token: '',
+      token: 'i-got-token',
       user: null,
+      isAuthenticated: true,
+      userFeeds: null,
+      userFeedsError: null,
     }));
   });
 
@@ -49,6 +58,9 @@ describe('github reducer', () => {
       loginRequest: false,
       token: null,
       user: null,
+      isAuthenticated: false,
+      userFeeds: null,
+      userFeedsError: null,
     }));
   });
 
@@ -75,6 +87,9 @@ describe('github reducer', () => {
         login: 'username',
         bio: 'this is my bio',
       },
+      isAuthenticated: true,
+      userFeeds: null,
+      userFeedsError: null,
     });
   });
 });
