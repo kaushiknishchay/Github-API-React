@@ -19,10 +19,13 @@ const FeedList = ({ feeds }) => (
                         timeSince = '';
                     }
                 }
-                const commitObj = feed.payload.commits;
 
-                if (commitObj !== undefined && commitObj[0] !== undefined) {
+                if (feed.payload) {
+                  const commitObj = feed.payload.commits;
+
+                  if (commitObj !== undefined && commitObj[0] !== undefined) {
                     commitMsg = commitObj[0].message;
+                  }
                 } else {
                     commitMsg = '';
                 }
@@ -68,7 +71,7 @@ FeedList.defaultProps = {
 };
 
 FeedList.propTypes = {
-  feeds: PropTypes.array,
+  feeds: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
 };
 
 export default FeedList;

@@ -11,6 +11,7 @@ import Profile from './Profile';
 import RepoList from './RepoList';
 import { getPublicFeeds, getRepos } from '../service/httpFetch';
 import FeedList from './FeedsList';
+import SearchInput from './SearchInput';
 import { PUBLIC_FEEDS_ERROR, USER_REPO_ERROR } from '../lib/constants';
 
 class Home extends Component {
@@ -48,7 +49,7 @@ class Home extends Component {
 
     // user is logged in, user data is fetched, so fetch user feeds list
     if (nextProps.isAuthenticated && nextProps.user &&
-      (nextProps.userFeedsError === null && !nextProps.userFeeds.length > 0)) {
+      (nextProps.userFeedsError === null && nextProps.userFeeds === null)) {
       // if feed list empty and if there was an error in fetching last time then dont fetch
       this.props.getUserFeeds(nextProps.user.login);
     }
@@ -100,17 +101,23 @@ class Home extends Component {
     Raven.captureException(error, { extra: errorInfo });
   }
 
-
   handleChange = e => this.setState({
     searchRepoUsername: e.target.value,
   });
 
   render() {
     const {
-      user: data, userFeedsError, isAuthenticated, userFeeds,
+      user: data, userFeedsError, isAuthenticated,
     } = this.props;
+
+    let { userFeeds } = this.props;
+
     const { repoList, isError, feedList: publicFeedList } = this.state;
 
+    // convert userFeed from a Immutable Map Object to a JS Object
+    if (userFeeds) {
+      userFeeds = userFeeds.toJS();
+    }
     const feedList = isAuthenticated ? userFeeds : publicFeedList;
 
 
@@ -118,51 +125,96 @@ class Home extends Component {
     const repoError = isError === USER_REPO_ERROR;
 
     return (
-      <div
-        className="row"
-        ref={(re) => {
-          this.homeRef = re;
-        }}
-      >
+      <div className="row" ref={(re) => { this.homeRef = re; }}>
         <div className="col-lg-12">
           <br />
           {data && <Profile data={data} />}
 
           <br />
-          {feedError && <div className="error"><h1>Please try again.</h1> <p>Can not fetch feeds.</p></div>}
-
-          <FeedList feeds={feedList} />
-
+          <ul className="nav nav-tabs nav-justified" id="myTab" role="tablist">
+            <li className="nav-item">
+              <a
+                className="nav-link active"
+                id="feeds-tab"
+                data-toggle="tab"
+                href="#feeds"
+                role="tab"
+                aria-controls="feeds"
+                aria-selected="true"
+              >Home
+              </a>
+            </li>
+            {
+                    data &&
+                    <li className="nav-item">
+                      <a
+                        className="nav-link"
+                        id="search-tab"
+                        data-toggle="tab"
+                        href="#search"
+                        role="tab"
+                        aria-controls="search"
+                        aria-selected="false"
+                      >Search Repos
+                      </a>
+                    </li>
+              }
+            {
+                    data &&
+                    <li className="nav-item">
+                      <a
+                        className="nav-link"
+                        id="profile-tab"
+                        data-toggle="tab"
+                        href="#profile"
+                        role="tab"
+                        aria-controls="profile"
+                        aria-selected="false"
+                      >Profile
+                      </a>
+                    </li>
+                }
+          </ul>
           <br />
+          <div className="tab-content" id="myTabContent">
 
-          {
-            data &&
-            <div className="input-group mr-3">
-              <div className="input-group-prepend">
-                <span className="input-group-text" id="inputGroup-sizing-default">
-                 Enter Username
-                </span>
-              </div>
-              <input
-                type="text"
-                className="form-control"
-                aria-label="Default"
-                onChange={this.handleChange}
-              />
-              <button
-                type="button"
-                className="ml-3 btn btn-primary"
-                onClick={this.getUserRepos}
-              >
-                Search
-              </button>
+            <div className="tab-pane fade show active" id="feeds" role="tabpanel" aria-labelledby="feeds-tab">
+              {feedError && <div className="error"><h1>Please try again.</h1> <p>Can not fetch feeds.</p></div>}
+
+              <FeedList feeds={feedList} />
+
             </div>
-          }
 
-          {repoError &&
-          <div className="error"><h1>Please try again.</h1> <p>Can not repository list.</p></div>}
+            <div className="tab-pane fade" id="search" role="tabpanel" aria-labelledby="search-tab">
 
-          <RepoList data={repoList} />
+              {
+                  data &&
+                  <SearchInput onClick={this.getUserRepos} onChange={this.handleChange} />
+                }
+
+              { repoError &&
+              <div className="error"><h1>Please try again.</h1> <p>Cant fetch repository list.</p></div>
+                }
+
+              <RepoList data={repoList} />
+            </div>
+            <div className="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab" >
+              {
+                  data &&
+                  <ul className="list-group list-group-flush">
+                    <li className="list-group-item"><h1>{data.name}</h1></li>
+                    <li className="list-group-item">Followers: {data.followers}</li>
+                    <li className="list-group-item">Following: {data.following}</li>
+                    <li className="list-group-item">Public repos: {data.public_repos}</li>
+                    <li className="list-group-item">Public Gists: {data.public_gists}</li>
+                    <li className="list-group-item">Blog: <a href={data.blog}>{data.blog}</a></li>
+                    <li className="list-group-item">Location: {data.location}</li>
+                  </ul>
+                }
+            </div>
+
+          </div>
+
         </div>
       </div>
     );
@@ -184,7 +236,7 @@ Home.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   user: PropTypes.object,
   // eslint-disable-next-line react/forbid-prop-types
-  userFeeds: PropTypes.array,
+  userFeeds: PropTypes.object,
   userFeedsError: PropTypes.string,
   getInfo: PropTypes.func,
   getUserFeeds: PropTypes.func,
