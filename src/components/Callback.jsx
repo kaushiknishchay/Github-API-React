@@ -12,6 +12,7 @@ class Callback extends Component {
     if (error) {
       return '';
     }
+    // use ternary operator here
     return url.match(/[&?]code=([\w/-]+)/)[1];
   }
 
@@ -28,7 +29,7 @@ class Callback extends Component {
   // }
 
   componentDidMount() {
-    if (this.props.location && this.props.location) {
+    if (this.props.location && this.props.location) { //why same condition two times?
       const authCode = Callback.getAuthCode(this.props.location.search);
       // const stateCode = Callback.getStateCode(this.props.location.search);
       this.props.signIn(authCode);
@@ -36,6 +37,7 @@ class Callback extends Component {
   }
 
   shouldComponentUpdate(nextProps) {
+    // is this check needed?
     return (nextProps.isSignIn !== this.props.isSignIn);
   }
 

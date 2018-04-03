@@ -46,6 +46,7 @@ class Home extends Component {
 
 
   shouldComponentUpdate(nextProps, nextState) {
+    // is this check needed?    
     const propsChanged = Object.keys(diff(this.props, nextProps)).length > 0;
     const stateChanged = Object.keys(diff(this.state, nextState)).length > 0;
 
@@ -120,8 +121,9 @@ class Home extends Component {
     Raven.captureException(error, { extra: errorInfo });
   }
 
-    count = 0;
+    count = 0; // where is this variable used?
 
+    // try to use arrow functions to get practise
     handleChange(e) {
       this.setState({
         username: e.target.value,
@@ -132,6 +134,8 @@ class Home extends Component {
     render() {
       const data = this.props.user;
       const { repoList, feedList } = this.state;
+
+      //can't we have the error in a single varialbe
       const feedError = this.state.isError === USER_FEEDS_ERROR;
       const repoError = this.state.isError === USER_REPO_ERROR;
       const publicFeedError = this.state.isError === PUBLIC_FEEDS_ERROR;
@@ -143,6 +147,8 @@ class Home extends Component {
             {data && <Profile data={data} />}
 
             <br />
+
+            // can do something like (feedError || publicFeedError) && (...statement)
             { feedError && <div className="error"><h1>Please try again.</h1> <p>Can not fetch feeds.</p></div> }
             { publicFeedError && <div className="error"><h1>Please try again.</h1> <p>Can not fetch feeds.</p></div> }
 

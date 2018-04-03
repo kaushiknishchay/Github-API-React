@@ -18,6 +18,7 @@ class HeaderContainer extends React.Component {
 
   // eslint-disable-next-line no-unused-vars
   shouldComponentUpdate(nextProps, nextState) {
+    // is this check needed?    
     return nextProps.isSignIn !== this.props.isSignIn;
   }
 
