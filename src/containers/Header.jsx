@@ -23,10 +23,9 @@ class HeaderContainer extends React.Component {
 
 
   onClick() {
-    const token = localStorage.getItem('github-token');
+    const token = localStorage.getItem('auth-token');
     if (this.props.isSignIn && token !== undefined && token !== '') {
       try {
-        localStorage.removeItem('github-token');
         localStorage.removeItem('auth-token');
       } catch (e) {
         console.error('Couldn\'t delete token from localStorage.');

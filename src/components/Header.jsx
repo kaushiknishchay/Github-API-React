@@ -11,7 +11,7 @@ export default function Header({ isSignIn, onClick }) {
           type="button"
           onClick={onClick}
         >
-          {isSignIn ? 'Sign In' : 'Sign Out'}
+          {!isSignIn ? 'Sign In' : 'Sign Out'}
         </button>
 
       </form>
