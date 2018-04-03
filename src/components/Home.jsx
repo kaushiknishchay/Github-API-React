@@ -3,28 +3,24 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
-import { diff } from 'deep-object-diff';
 import * as Raven from 'raven-js';
 
 
-import { getUserInfo } from '../actions';
+import { getUserFeeds, getUserInfo } from '../actions';
 import Profile from './Profile';
 import RepoList from './RepoList';
-import { getFeeds, getPublicFeeds, getRepos } from '../service/httpFetch';
+import { getPublicFeeds, getRepos } from '../service/httpFetch';
 import FeedList from './FeedsList';
-// import { sentryExtra } from '../lib/utils';
-import { PUBLIC_FEEDS_ERROR, USER_FEEDS_ERROR, USER_REPO_ERROR } from '../lib/constants';
+import { PUBLIC_FEEDS_ERROR, USER_REPO_ERROR } from '../lib/constants';
 
 class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      username: '',
+      searchRepoUsername: '',
       repoList: [],
       feedList: [],
-      fetchedFeeds: false,
-      publicFeeds: true,
-      isError: false,
+      isError: 0,
     };
     this.homeRef = null;
     this.getUserRepos = this.getUserRepos.bind(this);
@@ -33,36 +29,36 @@ class Home extends Component {
   }
 
   componentDidMount() {
-    // if user logged in show his feed
-    if (this.props.token && !this.props.user) {
+    // if user logged in, show his feed
+    if (this.props.isAuthenticated && !this.props.user) {
       this.props.getInfo();
     }
 
-    // if user not logged in show public feed
-    if (!this.props.token) {
+    // if user not logged in, show public feed
+    if (!this.props.isAuthenticated) {
       this.getPublicFeed();
     }
   }
 
-
-  shouldComponentUpdate(nextProps, nextState) {
-    const propsChanged = Object.keys(diff(this.props, nextProps)).length > 0;
-    const stateChanged = Object.keys(diff(this.state, nextState)).length > 0;
-
-    return ((propsChanged || stateChanged));
-  }
-
   componentWillUpdate(nextProps, nextState) {
-    if (nextProps.token && !nextProps.user) {
+    // user just signed in, and data isn't fetched so fetch data
+    if (nextProps.isAuthenticated && !nextProps.user) {
       this.props.getInfo();
     }
-    if (nextProps.user
-      && this.state.fetchedFeeds === false
-      && nextState.fetchedFeeds === false) {
-      this.getUserFeeds(nextProps.user.login);
+
+    // user is logged in, user data is fetched, so fetch user feeds list
+    if (nextProps.isAuthenticated && nextProps.user &&
+      (nextProps.userFeedsError === null && !nextProps.userFeeds.length > 0)) {
+      // if feed list empty and if there was an error in fetching last time then dont fetch
+      this.props.getUserFeeds(nextProps.user.login);
     }
 
-    if (nextProps.user === null && this.state.publicFeeds === false) {
+    // user has signed out, fetched public feeds
+    if (!nextProps.isAuthenticated
+      && nextState.feedList !== null
+      && (!nextState.feedList.length > 0 && nextState.isError !== PUBLIC_FEEDS_ERROR)) {
+      // if no error came in fetching public feeds then fetch them else stop
+
       this.getPublicFeed();
     }
   }
@@ -72,7 +68,7 @@ class Home extends Component {
   }
 
   getUserRepos() {
-    getRepos(this.state.username).then((res) => {
+    getRepos(this.state.searchRepoUsername).then((res) => {
       this.setState({
         repoList: res.data,
       });
@@ -84,29 +80,12 @@ class Home extends Component {
     });
   }
 
-  getUserFeeds(login) {
-    getFeeds(`${login}`).then((res) => {
-      this.setState({
-        feedList: res.data,
-        fetchedFeeds: true,
-        publicFeeds: false,
-        // eslint-disable-next-line no-unused-vars
-      });
-    }).catch((err) => {
-      // Raven.captureException(err, sentryExtra('Error while fetching user feeds'));
-      this.setState({
-        isError: USER_FEEDS_ERROR,
-      });
-    });
-  }
 
   getPublicFeed() {
     if (this.homeRef) {
       getPublicFeeds().then((res) => {
         this.setState({
           feedList: res.data,
-          publicFeeds: true,
-          fetchedFeeds: false,
         });
       }).catch((err) => {
         this.setState({
@@ -121,16 +100,22 @@ class Home extends Component {
     Raven.captureException(error, { extra: errorInfo });
   }
 
+
   handleChange = e => this.setState({
-    username: e.target.value,
+    searchRepoUsername: e.target.value,
   });
 
   render() {
-    const data = this.props.user;
-    const { repoList, feedList } = this.state;
-    const feedError = this.state.isError === USER_FEEDS_ERROR
-          || this.state.isError === PUBLIC_FEEDS_ERROR;
-    const repoError = this.state.isError === USER_REPO_ERROR;
+    const {
+      user: data, userFeedsError, isAuthenticated, userFeeds,
+    } = this.props;
+    const { repoList, isError, feedList: publicFeedList } = this.state;
+
+    const feedList = isAuthenticated ? userFeeds : publicFeedList;
+
+
+    const feedError = isError === PUBLIC_FEEDS_ERROR || userFeedsError !== null;
+    const repoError = isError === USER_REPO_ERROR;
 
     return (
       <div
@@ -185,24 +170,34 @@ class Home extends Component {
 }
 
 Home.defaultProps = {
-  token: '',
-  user: {},
-  getInfo: () => {
-
-  },
+  // token: null,
+  user: null,
+  userFeeds: null,
+  userFeedsError: null,
+  getInfo: () => null,
+  getUserFeeds: () => null,
+  isAuthenticated: localStorage.getItem('auth-token') !== undefined,
 };
 
 Home.propTypes = {
-  token: PropTypes.string,
+  // token: PropTypes.string,
   // eslint-disable-next-line react/forbid-prop-types
   user: PropTypes.object,
+  // eslint-disable-next-line react/forbid-prop-types
+  userFeeds: PropTypes.array,
+  userFeedsError: PropTypes.string,
   getInfo: PropTypes.func,
+  getUserFeeds: PropTypes.func,
+  isAuthenticated: PropTypes.bool,
 };
 
 function mapState(state) {
   return {
     user: state.getIn(['github', 'user']),
     token: state.getIn(['github', 'token']),
+    userFeeds: state.getIn(['github', 'userFeeds']),
+    userFeedsError: state.getIn(['github', 'userFeedsError']),
+    isAuthenticated: state.getIn(['github', 'isAuthenticated']),
   };
 }
 
@@ -210,6 +205,7 @@ function mapState(state) {
 function mapDispatch(dispatch) {
   return bindActionCreators({
     getInfo: getUserInfo,
+    getUserFeeds,
   }, dispatch);
 }
 

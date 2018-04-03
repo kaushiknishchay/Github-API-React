@@ -47,10 +47,10 @@ export function getPublicFeeds() {
 }
 //
 // // noinspection JSUnusedGlobalSymbols
-// export function getRepos(username) {
+// export function getRepos(searchRepoUsername) {
 //     return axios({
 //         method: "GET",
-//         url: ROOT_URL + "/users/" + username + "/repos",
+//         url: ROOT_URL + "/users/" + searchRepoUsername + "/repos",
 //         headers: {
 //             Authorization: "token " + localStorage.getItem('auth-token')
 //         }

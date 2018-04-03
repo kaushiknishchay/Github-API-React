@@ -13,28 +13,12 @@ class Callback extends Component {
     return error ? '' : url.match(/[&?]code=([\w/-]+)/)[1];
   }
 
-  //
-  // static getStateCode(url) {
-  //   const error = url.match(/[&?]error=([^&]+)/);
-  //   if (error) {
-  //     return '';
-  //   }
-  //   if (url.includes('state')) {
-  //     return url.match(/[&?]state=([\w/-]+)/)[1];
-  //   }
-  //   return '';
-  // }
-
   componentDidMount() {
     if (this.props.location && this.props.location.search) {
       const authCode = Callback.getAuthCode(this.props.location.search);
       // const stateCode = Callback.getStateCode(this.props.location.search);
       this.props.signIn(authCode);
     }
-  }
-
-  shouldComponentUpdate(nextProps) {
-    return (nextProps.isSignIn !== this.props.isSignIn);
   }
 
   render() {
@@ -45,6 +29,10 @@ class Callback extends Component {
           this.props.isLoggedIn
           && <Redirect to="/" />
         }
+        {
+          !this.props.isLoggedIn
+          && <Redirect to="/?login_failed" />
+        }
       </div>
     );
   }
@@ -52,7 +40,7 @@ class Callback extends Component {
 
 Callback.defaultProps = {
   isLoggedIn: false,
-  isSignIn: false,
+  // isSignIn: false,
   location: {
     search: '',
   },
@@ -61,7 +49,7 @@ Callback.defaultProps = {
 
 Callback.propTypes = {
   isLoggedIn: PropTypes.bool,
-  isSignIn: PropTypes.bool,
+  // isSignIn: PropTypes.bool,
   // eslint-disable-next-line react/forbid-prop-types
   location: PropTypes.object,
   signIn: PropTypes.func,

@@ -3,10 +3,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 
-const FeedList = props => (
+const FeedList = ({ feeds }) => (
   <div className="list-group">
-    {
-            props.feeds.map((feed) => {
+    { feeds &&
+            feeds.map((feed) => {
                 let timeSince = null;
                 let commitMsg = '';
                 let avatarUrl = null;
