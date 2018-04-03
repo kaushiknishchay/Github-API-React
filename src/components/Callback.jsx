@@ -9,10 +9,8 @@ import { beginSignIn } from '../actions';
 class Callback extends Component {
   static getAuthCode(url) {
     const error = url.match(/[&?]error=([^&]+)/);
-    if (error) {
-      return '';
-    }
-    return url.match(/[&?]code=([\w/-]+)/)[1];
+
+    return error ? '' : url.match(/[&?]code=([\w/-]+)/)[1];
   }
 
   //
@@ -28,7 +26,7 @@ class Callback extends Component {
   // }
 
   componentDidMount() {
-    if (this.props.location && this.props.location) {
+    if (this.props.location && this.props.location.search) {
       const authCode = Callback.getAuthCode(this.props.location.search);
       // const stateCode = Callback.getStateCode(this.props.location.search);
       this.props.signIn(authCode);
