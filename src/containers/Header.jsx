@@ -65,7 +65,7 @@ function mapState(state) {
   const token = state.getIn(['github', 'token']);
   return {
     token,
-    isSignIn: token !== undefined && token !== null,
+    isSignIn: (token !== undefined && token !== null),
   };
 }
 

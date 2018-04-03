@@ -14,6 +14,7 @@ import { getFeeds, getPublicFeeds, getRepos } from '../service/httpFetch';
 import FeedList from './FeedsList';
 // import { sentryExtra } from '../lib/utils';
 import { PUBLIC_FEEDS_ERROR, USER_FEEDS_ERROR, USER_REPO_ERROR } from '../lib/constants';
+import SearchInput from './SearchInput';
 
 class Home extends Component {
   constructor(props) {
@@ -34,7 +35,7 @@ class Home extends Component {
 
   componentDidMount() {
     // if user logged in show his feed
-    if (this.props.token && !this.props.user) {
+    if (this.props.token && !this.props.user && localStorage.getItem('auth-token') !== undefined) {
       this.props.getInfo();
     }
 
@@ -131,6 +132,7 @@ class Home extends Component {
 
     render() {
       const data = this.props.user;
+      const { token } = this.props;
       const { repoList, feedList } = this.state;
       const feedError = this.state.isError === USER_FEEDS_ERROR;
       const repoError = this.state.isError === USER_REPO_ERROR;
@@ -143,40 +145,94 @@ class Home extends Component {
             {data && <Profile data={data} />}
 
             <br />
-            { feedError && <div className="error"><h1>Please try again.</h1> <p>Can not fetch feeds.</p></div> }
-            { publicFeedError && <div className="error"><h1>Please try again.</h1> <p>Can not fetch feeds.</p></div> }
-
-            <FeedList feeds={feedList} />
-
+            <ul className="nav nav-tabs nav-justified" id="myTab" role="tablist">
+              <li className="nav-item">
+                <a
+                  className="nav-link active"
+                  id="feeds-tab"
+                  data-toggle="tab"
+                  href="#feeds"
+                  role="tab"
+                  aria-controls="feeds"
+                  aria-selected="true"
+                >Home
+                </a>
+              </li>
+              {
+                    data &&
+                    <li className="nav-item">
+                      <a
+                        className="nav-link"
+                        id="search-tab"
+                        data-toggle="tab"
+                        href="#search"
+                        role="tab"
+                        aria-controls="search"
+                        aria-selected="false"
+                      >Search Repos
+                      </a>
+                    </li>
+              }
+              {
+                    data &&
+                    <li className="nav-item">
+                      <a
+                        className="nav-link"
+                        id="profile-tab"
+                        data-toggle="tab"
+                        href="#profile"
+                        role="tab"
+                        aria-controls="profile"
+                        aria-selected="false"
+                      >Profile
+                      </a>
+                    </li>
+                }
+            </ul>
             <br />
+            <div className="tab-content" id="myTabContent">
 
-            {
-                        data &&
-                        <div className="input-group mr-3">
-                          <div className="input-group-prepend">
-                            <span className="input-group-text" id="inputGroup-sizing-default">
-                      Enter Username
-                            </span>
-                          </div>
-                          <input
-                            type="text"
-                            className="form-control"
-                            aria-label="Default"
-                            onChange={this.handleChange}
-                          />
-                          <button
-                            type="button"
-                            className="ml-3 btn btn-primary"
-                            onClick={this.getUserRepos}
-                          >
-                                Search
-                          </button>
-                        </div>
-                    }
+              <div className="tab-pane fade show active" id="feeds" role="tabpanel" aria-labelledby="feeds-tab">
+                { (!token && publicFeedError) &&
+                  <div className="error"><h1>Please try again.</h1> <p>Can not fetch feeds.</p></div>
+                }
+                { (token && feedError) &&
+                  <div className="error"><h1>Please try again.</h1> <p>Can not fetch feeds.</p></div>
+                }
+                <FeedList feeds={feedList} />
 
-            { repoError && <div className="error"><h1>Please try again.</h1> <p>Can not repository list.</p></div> }
+              </div>
 
-            <RepoList data={repoList} />
+              <div className="tab-pane fade" id="search" role="tabpanel" aria-labelledby="search-tab">
+
+                {
+                  data &&
+                  <SearchInput onClick={this.getUserRepos} onChange={this.handleChange} />
+                }
+
+                { repoError &&
+                  <div className="error"><h1>Please try again.</h1> <p>Cant fetch repository list.</p></div>
+                }
+
+                <RepoList data={repoList} />
+              </div>
+              <div className="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab" >
+                {
+                  data &&
+                  <ul className="list-group list-group-flush">
+                    <li className="list-group-item"><h1>{data.name}</h1></li>
+                    <li className="list-group-item">Followers: {data.followers}</li>
+                    <li className="list-group-item">Following: {data.following}</li>
+                    <li className="list-group-item">Public repos: {data.public_repos}</li>
+                    <li className="list-group-item">Public Gists: {data.public_gists}</li>
+                    <li className="list-group-item">Blog: <a href={data.blog}>{data.blog}</a></li>
+                    <li className="list-group-item">Location: {data.location}</li>
+                  </ul>
+                }
+              </div>
+
+            </div>
+
           </div>
         </div>
       );
@@ -184,11 +240,9 @@ class Home extends Component {
 }
 
 Home.defaultProps = {
-  token: '',
+  token: undefined,
   user: {},
-  getInfo: () => {
-
-  },
+  getInfo: () => null,
 };
 
 Home.propTypes = {
