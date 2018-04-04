@@ -21,10 +21,9 @@ const getUserFeedsList = createSelector(
         const actorKey = feedItem.get('actor').toString();
         feedItem = feedItem.set('repo', reposList.get(repoKey));
         feedItem = feedItem.set('actor', actorList.get(actorKey));
-        // console.log(feedItem.toJS(), actorKey, repoKey);
         return feedItem;
       });
-      return returnFeedList;
+      return returnFeedList.toJS();
     }
     return null;
   },
