@@ -9,23 +9,23 @@ const getDefaultConfig = () => ({
   },
 });
 
-export function getAuthToken(token) {
+export function fetchAuthToken(token) {
   return axios.get(`${TOKEN_URL}/${token}`);
 }
 
-export function getUserDetails() {
+export function fetchUserDetails() {
   return axios.get('/user', getDefaultConfig());
 }
 
 
-export function getFeeds(username) {
+export function fetchFeeds(username) {
   return axios.get(`/users/${username}/events`, getDefaultConfig());
 }
 
-export function getPublicFeeds() {
+export function fetchPublicFeeds() {
   return axios.get(`${ROOT_URL}/events`);
 }
 
-export function getRepos(username) {
+export function fetchRepos(username) {
   return axios.get(`/users/${username}/repos`, getDefaultConfig());
 }
