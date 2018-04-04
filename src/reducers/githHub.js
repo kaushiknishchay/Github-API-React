@@ -2,13 +2,13 @@ import { fromJS } from 'immutable';
 import { SIGN_OUT, SIGNED_IN, SIGNED_IN_FAILED, SIGNIN_REQUEST, USER_DATA, USER_FEEDS, USER_FEEDS_ERROR } from '../actions';
 import { isTokenSaved } from '../lib/utils';
 
-const initialState = fromJS({
-  loginRequest: null,
+export const initialState = fromJS({
+  loginRequest: false,
   token: localStorage.getItem('auth-token'),
   user: null,
   isAuthenticated: isTokenSaved(),
-  userFeeds: null,
   userFeedsError: null,
+  normalizedFeed: null,
 });
 
 export default function gitHub(state = initialState, action) {
@@ -20,7 +20,7 @@ export default function gitHub(state = initialState, action) {
         loginRequest: false,
         token: action.token,
         isAuthenticated: true,
-        userFeeds: null,
+        normalizedFeed: null,
       });
     case SIGN_OUT:
     case SIGNED_IN_FAILED:
@@ -29,19 +29,19 @@ export default function gitHub(state = initialState, action) {
         token: null,
         user: null,
         isAuthenticated: false,
-        userFeeds: null,
+        normalizedFeed: null,
       });
     case USER_DATA:
       return state.set('user', action.user);
     case USER_FEEDS_ERROR:
       return state.merge({
         userFeedsError: action.error,
-        userFeeds: null,
+        normalizedFeed: null,
       });
     case USER_FEEDS:
       return state.merge({
-        userFeeds: action.userFeeds,
         userFeedsError: null,
+        normalizedFeed: action.normalizedFeed,
       });
     default:
       return state;

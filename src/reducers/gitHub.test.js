@@ -1,5 +1,5 @@
 import { fromJS } from 'immutable';
-import gitHub from './githHub';
+import gitHub, { initialState } from './githHub';
 import { SIGN_OUT, SIGNED_IN, SIGNIN_REQUEST, USER_DATA } from '../actions';
 
 
@@ -7,17 +7,18 @@ import { SIGN_OUT, SIGNED_IN, SIGNIN_REQUEST, USER_DATA } from '../actions';
 jest.mock('../service/httpFetch');
 
 describe('github reducer', () => {
-  let initialState;
+  let initialStateLocal;
 
   beforeEach(() => {
-    initialState = fromJS({
-      loginRequest: null,
-      token: null,
-      user: null,
-      isAuthenticated: false,
-      userFeeds: null,
-      userFeedsError: null,
-    });
+    // initialState = fromJS({
+    //   loginRequest: null,
+    //   token: null,
+    //   user: null,
+    //   isAuthenticated: false,
+    //   userFeeds: null,
+    //   userFeedsError: null,
+    // });
+    initialStateLocal = fromJS(initialState);
   });
 
   it('==> should give Initial State', () => {
@@ -27,13 +28,8 @@ describe('github reducer', () => {
   it('==> should set Login Request', () => {
     expect(gitHub(initialState, {
       type: SIGNIN_REQUEST,
-    })).toEqual(fromJS({
+    })).toEqual(initialStateLocal.merge({
       loginRequest: true,
-      token: null,
-      user: null,
-      isAuthenticated: false,
-      userFeeds: null,
-      userFeedsError: null,
     }));
   });
 
@@ -41,25 +37,21 @@ describe('github reducer', () => {
     expect(gitHub(initialState, {
       type: SIGNED_IN,
       token: 'i-got-token',
-    })).toEqual(fromJS({
+    })).toEqual(initialState.merge({
       loginRequest: false,
       token: 'i-got-token',
-      user: null,
       isAuthenticated: true,
-      userFeeds: null,
-      userFeedsError: null,
     }));
   });
 
   it('==> should Logout', () => {
     expect(gitHub(initialState, {
       type: SIGN_OUT,
-    })).toEqual(fromJS({
+    })).toEqual(initialStateLocal.merge({
       loginRequest: false,
       token: null,
       user: null,
       isAuthenticated: false,
-      userFeeds: null,
       userFeedsError: null,
     }));
   });
@@ -88,7 +80,7 @@ describe('github reducer', () => {
         bio: 'this is my bio',
       },
       isAuthenticated: true,
-      userFeeds: null,
+      normalizedFeed: null,
       userFeedsError: null,
     });
   });

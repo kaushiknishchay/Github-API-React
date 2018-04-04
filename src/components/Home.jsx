@@ -13,6 +13,7 @@ import { getPublicFeeds, getRepos } from '../service/httpFetch';
 import FeedList from './FeedsList';
 import SearchInput from './SearchInput';
 import { PUBLIC_FEEDS_ERROR, USER_REPO_ERROR } from '../lib/constants';
+import getUserFeedsList from '../lib/userFeedSelector';
 
 class Home extends Component {
   constructor(props) {
@@ -22,6 +23,7 @@ class Home extends Component {
       repoList: [],
       feedList: [],
       isError: 0,
+      errorMsg: '',
     };
     this.homeRef = null;
     this.getUserRepos = this.getUserRepos.bind(this);
@@ -36,7 +38,7 @@ class Home extends Component {
     }
 
     // if user not logged in, show public feed
-    if (!this.props.isAuthenticated) {
+    if (!this.props.isAuthenticated && this.props.loginRequest === false) {
       this.getPublicFeed();
     }
   }
@@ -49,9 +51,9 @@ class Home extends Component {
 
     // user is logged in, user data is fetched, so fetch user feeds list
     if (nextProps.isAuthenticated && nextProps.user &&
-      (nextProps.userFeedsError === null && nextProps.userFeeds === null)) {
+      (nextProps.userFeedsError === null && nextProps.getUserFeedsList === null)) {
       // if feed list empty and if there was an error in fetching last time then dont fetch
-      this.props.getUserFeeds(nextProps.user.login);
+      this.props.fetchUserFeeds(nextProps.user.login);
     }
 
     // user has signed out, fetched public feeds
@@ -77,6 +79,7 @@ class Home extends Component {
       // Raven.captureException(err, sentryExtra('Error during fetching user repos'));
       this.setState({
         isError: USER_REPO_ERROR,
+        errorMsg: err,
       });
     });
   }
@@ -91,6 +94,7 @@ class Home extends Component {
       }).catch((err) => {
         this.setState({
           isError: PUBLIC_FEEDS_ERROR,
+          errorMsg: err,
         });
       });
     }
@@ -108,18 +112,14 @@ class Home extends Component {
   render() {
     const {
       user: data, userFeedsError, isAuthenticated,
+      getUserFeedsList: userFeeds,
     } = this.props;
 
-    let { userFeeds } = this.props;
+    const {
+      repoList, isError, feedList: publicFeedList, errorMsg,
+    } = this.state;
 
-    const { repoList, isError, feedList: publicFeedList } = this.state;
-
-    // convert userFeed from a Immutable Map Object to a JS Object
-    if (userFeeds) {
-      userFeeds = userFeeds.toJS();
-    }
     const feedList = isAuthenticated ? userFeeds : publicFeedList;
-
 
     const feedError = isError === PUBLIC_FEEDS_ERROR || userFeedsError !== null;
     const repoError = isError === USER_REPO_ERROR;
@@ -179,7 +179,11 @@ class Home extends Component {
           <div className="tab-content" id="myTabContent">
 
             <div className="tab-pane fade show active" id="feeds" role="tabpanel" aria-labelledby="feeds-tab">
-              {feedError && <div className="error"><h1>Please try again.</h1> <p>Can not fetch feeds.</p></div>}
+              {feedError &&
+              <div className="error"><h1>Please try again.</h1> <p>Can not fetch feeds.</p>
+                <p>{errorMsg}</p>
+              </div>
+              }
 
               <FeedList feeds={feedList} />
 
@@ -224,10 +228,11 @@ class Home extends Component {
 Home.defaultProps = {
   // token: null,
   user: null,
-  userFeeds: null,
   userFeedsError: null,
   getInfo: () => null,
-  getUserFeeds: () => null,
+  fetchUserFeeds: () => null,
+  getUserFeedsList: [],
+  loginRequest: false,
   isAuthenticated: localStorage.getItem('auth-token') !== undefined,
 };
 
@@ -235,21 +240,22 @@ Home.propTypes = {
   // token: PropTypes.string,
   // eslint-disable-next-line react/forbid-prop-types
   user: PropTypes.object,
-  // eslint-disable-next-line react/forbid-prop-types
-  userFeeds: PropTypes.object,
+  getUserFeedsList: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
   userFeedsError: PropTypes.string,
   getInfo: PropTypes.func,
-  getUserFeeds: PropTypes.func,
+  fetchUserFeeds: PropTypes.func,
   isAuthenticated: PropTypes.bool,
+  loginRequest: PropTypes.bool,
 };
 
 function mapState(state) {
   return {
     user: state.getIn(['github', 'user']),
     token: state.getIn(['github', 'token']),
-    userFeeds: state.getIn(['github', 'userFeeds']),
     userFeedsError: state.getIn(['github', 'userFeedsError']),
     isAuthenticated: state.getIn(['github', 'isAuthenticated']),
+    loginRequest: state.getIn(['github', 'loginRequest']),
+    getUserFeedsList: getUserFeedsList(state),
   };
 }
 
@@ -257,7 +263,7 @@ function mapState(state) {
 function mapDispatch(dispatch) {
   return bindActionCreators({
     getInfo: getUserInfo,
-    getUserFeeds,
+    fetchUserFeeds: getUserFeeds,
   }, dispatch);
 }
 
