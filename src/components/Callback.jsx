@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import { beginSignIn } from '../actions';
+import { isTokenSaved } from '../lib/utils';
 
 
 class Callback extends Component {
@@ -16,8 +17,15 @@ class Callback extends Component {
   componentDidMount() {
     if (this.props.location && this.props.location.search) {
       const authCode = Callback.getAuthCode(this.props.location.search);
-      // const stateCode = Callback.getStateCode(this.props.location.search);
-      this.props.signIn(authCode);
+
+      // condition to prevent sign in request trigger
+      // if /callback?code=xxxxxxxxx url page is refreshed.
+
+      if (!this.props.isAuthenticated &&
+        (this.props.token === null || this.props.token === undefined)
+        && !isTokenSaved()) {
+        this.props.signIn(authCode);
+      }
     }
   }
 
@@ -40,19 +48,23 @@ class Callback extends Component {
 
 Callback.defaultProps = {
   isLoggedIn: false,
+  isAuthenticated: false,
   // isSignIn: false,
   location: {
     search: '',
   },
   signIn: code => code,
+  token: '',
 };
 
 Callback.propTypes = {
   isLoggedIn: PropTypes.bool,
+  isAuthenticated: PropTypes.bool,
   // isSignIn: PropTypes.bool,
   // eslint-disable-next-line react/forbid-prop-types
   location: PropTypes.object,
   signIn: PropTypes.func,
+  token: PropTypes.string,
 };
 
 function mapDispatch(dispatch) {
@@ -63,7 +75,9 @@ function mapDispatch(dispatch) {
 
 function mapState(state) {
   return {
+    token: state.getIn(['github', 'token']),
     isLoggedIn: state.getIn(['github', 'token']) !== undefined,
+    isAuthenticated: state.getIn(['github', 'isAuthenticated']),
   };
 }
 
