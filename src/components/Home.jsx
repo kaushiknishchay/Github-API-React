@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
+import { normalize } from 'normalizr';
 
 
 import { getUserFeeds, getUserInfo } from '../actions';
@@ -13,6 +14,7 @@ import { getPublicFeeds, getRepos } from '../service/httpFetch';
 import FeedList from './FeedsList';
 import SearchInput from './SearchInput';
 import { PUBLIC_FEEDS_ERROR, USER_REPO_ERROR } from '../lib/constants';
+import { userFeedsSchema } from '../lib/schema';
 
 class Home extends Component {
   constructor(props) {
@@ -36,7 +38,7 @@ class Home extends Component {
     }
 
     // if user not logged in, show public feed
-    if (!this.props.isAuthenticated) {
+    if (!this.props.isAuthenticated && this.props.loginRequest === false) {
       this.getPublicFeed();
     }
   }
@@ -85,6 +87,9 @@ class Home extends Component {
   getPublicFeed() {
     if (this.homeRef) {
       getPublicFeeds().then((res) => {
+        console.log(res.data);
+        console.log(normalize(res.data, userFeedsSchema));
+
         this.setState({
           feedList: res.data,
         });
@@ -228,6 +233,7 @@ Home.defaultProps = {
   userFeedsError: null,
   getInfo: () => null,
   getUserFeeds: () => null,
+  loginRequest: false,
   isAuthenticated: localStorage.getItem('auth-token') !== undefined,
 };
 
@@ -241,6 +247,7 @@ Home.propTypes = {
   getInfo: PropTypes.func,
   getUserFeeds: PropTypes.func,
   isAuthenticated: PropTypes.bool,
+  loginRequest: PropTypes.bool,
 };
 
 function mapState(state) {
@@ -250,6 +257,7 @@ function mapState(state) {
     userFeeds: state.getIn(['github', 'userFeeds']),
     userFeedsError: state.getIn(['github', 'userFeedsError']),
     isAuthenticated: state.getIn(['github', 'isAuthenticated']),
+    loginRequest: state.getIn(['github', 'loginRequest']),
   };
 }
 

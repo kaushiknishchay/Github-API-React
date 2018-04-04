@@ -22,9 +22,12 @@
   "dependencies": {
     "axios": "^0.18.0",
     "deep-object-diff": "^1.1.0",
+    "enzyme": "^3.3.0",
+    "enzyme-adapter-react-16": "^1.1.1",
     "immutable": "^3.8.2",
     "jest-localstorage-mock": "^2.2.0",
     "moment": "^2.21.0",
+    "normalizr": "^3.2.4",
     "prop-types": "latest",
     "raven-for-redux": "^1.3.0",
     "raven-js": "^3.24.0",
@@ -37,9 +40,7 @@
     "redux-devtools-extension": "^2.13.2",
     "redux-immutable": "^4.0.0",
     "redux-logger": "^3.0.6",
-    "redux-thunk": "^2.2.0",
-    "enzyme": "^3.3.0",
-    "enzyme-adapter-react-16": "^1.1.1"
+    "redux-thunk": "^2.2.0"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -1,7 +1,9 @@
 import * as Raven from 'raven-js';
+import { normalize } from 'normalizr';
 
 import { getAuthToken, getFeeds, getUserDetails } from '../service/httpFetch';
 import { sentryExtra } from '../lib/utils';
+import { userFeedsSchema } from '../lib/schema';
 
 export const SIGNIN_REQUEST = 'SIGNIN_REQUEST';
 export const SIGNED_IN = 'SIGNED_IN';
@@ -69,10 +71,11 @@ export function getUserInfo() {
 }
 
 export function getUserFeeds(login) {
-  function success(feeds) {
+  function success(feeds, normalizedFeed) {
     return {
       type: USER_FEEDS,
       userFeeds: feeds,
+      normalizedFeed,
     };
   }
 
@@ -85,7 +88,7 @@ export function getUserFeeds(login) {
 
   return (dispatch) => {
     getFeeds(`${login}`).then((res) => {
-      dispatch(success(res.data));
+      dispatch(success(res.data, normalize(res.data, userFeedsSchema)));
     }).catch((err) => {
       dispatch(error(err));
       // Raven.captureException(err, sentryExtra('Error while fetching user feeds'));

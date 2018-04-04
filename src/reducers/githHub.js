@@ -9,6 +9,7 @@ const initialState = fromJS({
   isAuthenticated: isTokenSaved(),
   userFeeds: null,
   userFeedsError: null,
+  normalizedFeed: null,
 });
 
 export default function gitHub(state = initialState, action) {
@@ -42,6 +43,7 @@ export default function gitHub(state = initialState, action) {
       return state.merge({
         userFeeds: action.userFeeds,
         userFeedsError: null,
+        normalizedFeed: action.normalizedFeed,
       });
     default:
       return state;
