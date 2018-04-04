@@ -4,15 +4,24 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
+import Spinner from 'react-spinkit';
+
 
 import { getUserFeeds, getUserInfo } from '../actions';
 import Profile from './Profile';
 import RepoList from './RepoList';
-import { getPublicFeeds, getRepos } from '../service/httpFetch';
+import { fetchPublicFeeds, fetchRepos } from '../service/httpFetch';
 import FeedList from './FeedsList';
 import SearchInput from './SearchInput';
 import { PUBLIC_FEEDS_ERROR, USER_REPO_ERROR } from '../lib/constants';
 import getUserFeedsList from '../lib/userFeedSelector';
+import ProfileDataList from './ProfileDataList';
+import TabItem from './Tabs/Item';
+import TabContent from './Tabs/Content';
+
+// eslint-disable-next-line react/prop-types
+const ErrorMsg = ({ msg, errorMsg }) => (<div className="error"><h1>Please try again.</h1> <p>{msg}</p><p>{errorMsg}</p></div>);
+
 
 class Home extends Component {
   constructor(props) {
@@ -70,7 +79,7 @@ class Home extends Component {
   }
 
   getUserRepos() {
-    getRepos(this.state.searchRepoUsername).then((res) => {
+    fetchRepos(this.state.searchRepoUsername).then((res) => {
       this.setState({
         repoList: res.data,
       });
@@ -86,7 +95,7 @@ class Home extends Component {
 
   getPublicFeed() {
     if (this.homeRef) {
-      getPublicFeeds().then((res) => {
+      fetchPublicFeeds().then((res) => {
         this.setState({
           feedList: res.data,
         });
@@ -119,105 +128,43 @@ class Home extends Component {
     } = this.state;
 
     const feedList = isAuthenticated ? userFeeds : publicFeedList;
-
+    const showSpinner = isError === 0 && (feedList === null || feedList.length === 0);
     const feedError = isError === PUBLIC_FEEDS_ERROR || userFeedsError !== null;
     const repoError = isError === USER_REPO_ERROR;
 
     return (
       <div className="row" ref={(re) => { this.homeRef = re; }}>
         <div className="col-lg-12">
-          <br />
-          {data && <Profile data={data} />}
 
-          <br />
+          <Profile data={data} />
+
           <ul className="nav nav-tabs nav-justified" id="myTab" role="tablist">
-            <li className="nav-item">
-              <a
-                className="nav-link active"
-                id="feeds-tab"
-                data-toggle="tab"
-                href="#feeds"
-                role="tab"
-                aria-controls="feeds"
-                aria-selected="true"
-              >Home
-              </a>
-            </li>
-            {
-                    data &&
-                    <li className="nav-item">
-                      <a
-                        className="nav-link"
-                        id="search-tab"
-                        data-toggle="tab"
-                        href="#search"
-                        role="tab"
-                        aria-controls="search"
-                        aria-selected="false"
-                      >Search Repos
-                      </a>
-                    </li>
-              }
-            {
-                    data &&
-                    <li className="nav-item">
-                      <a
-                        className="nav-link"
-                        id="profile-tab"
-                        data-toggle="tab"
-                        href="#profile"
-                        role="tab"
-                        aria-controls="profile"
-                        aria-selected="false"
-                      >Profile
-                      </a>
-                    </li>
-                }
+            <TabItem name="feeds" title="Home" active />
+            { data && [
+              <TabItem name="search" key="search" title="Search" />,
+              <TabItem name="profile" key="profile" title="Profile" />]
+            }
           </ul>
-          <br />
+
           <div className="tab-content" id="myTabContent">
 
-            <div className="tab-pane fade show active" id="feeds" role="tabpanel" aria-labelledby="feeds-tab">
-              {feedError &&
-              <div className="error"><h1>Please try again.</h1> <p>Can not fetch feeds.</p>
-                <p>{errorMsg}</p>
-              </div>
-              }
-
+            <TabContent name="feeds" active>
+              {feedError && <ErrorMsg msg="Can not fetch feeds." errorMsg={errorMsg} />}
+              {showSpinner && <Spinner name="line-scale" className="loading" />}
               <FeedList feeds={feedList} />
+            </TabContent>
 
-            </div>
-
-            <div className="tab-pane fade" id="search" role="tabpanel" aria-labelledby="search-tab">
-
-              {
-                  data &&
-                  <SearchInput onClick={this.getUserRepos} onChange={this.handleChange} />
-                }
-
-              { repoError &&
-              <div className="error"><h1>Please try again.</h1> <p>Cant fetch repository list.</p></div>
-                }
-
+            <TabContent name="search">
+              {data && <SearchInput onClick={this.getUserRepos} onChange={this.handleChange} />}
+              {repoError && <ErrorMsg msg="Cant fetch repository list." />}
               <RepoList data={repoList} />
-            </div>
-            <div className="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab" >
-              {
-                  data &&
-                  <ul className="list-group list-group-flush">
-                    <li className="list-group-item"><h1>{data.name}</h1></li>
-                    <li className="list-group-item">Followers: {data.followers}</li>
-                    <li className="list-group-item">Following: {data.following}</li>
-                    <li className="list-group-item">Public repos: {data.public_repos}</li>
-                    <li className="list-group-item">Public Gists: {data.public_gists}</li>
-                    <li className="list-group-item">Blog: <a href={data.blog}>{data.blog}</a></li>
-                    <li className="list-group-item">Location: {data.location}</li>
-                  </ul>
-                }
-            </div>
+            </TabContent>
+
+            <TabContent name="profile">
+              <ProfileDataList data={data} />
+            </TabContent>
 
           </div>
-
         </div>
       </div>
     );

@@ -5,7 +5,7 @@ import moment from 'moment';
 
 const FeedList = ({ feeds }) => (
   <div className="list-group">
-    { feeds &&
+    { feeds !== null &&
             feeds.map((feed) => {
                 let timeSince = null;
                 let commitMsg = '';

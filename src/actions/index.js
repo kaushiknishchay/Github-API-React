@@ -2,7 +2,7 @@ import * as Raven from 'raven-js';
 import { normalize } from 'normalizr';
 
 import userFeedsSchema from '../lib/schema';
-import { getAuthToken, getFeeds, getUserDetails } from '../service/httpFetch';
+import { fetchAuthToken, fetchFeeds, fetchUserDetails } from '../service/httpFetch';
 import { sentryExtra } from '../lib/utils';
 
 export const SIGNIN_REQUEST = 'SIGNIN_REQUEST';
@@ -38,7 +38,7 @@ export function beginSignIn(authCode) {
   return (dispatch) => {
     dispatch(start());
 
-    getAuthToken(authCode).then((res) => {
+    fetchAuthToken(authCode).then((res) => {
       const authToken = res.data.token;
       if (authToken !== undefined) {
         localStorage.setItem('auth-token', authToken);
@@ -61,7 +61,7 @@ export function getUserInfo() {
   }
 
   return (dispatch) => {
-    getUserDetails().then((res) => {
+    fetchUserDetails().then((res) => {
       // console.log(res.data);
       dispatch(success(res.data));
     }).catch((err) => {
@@ -87,7 +87,7 @@ export function getUserFeeds(login) {
   }
 
   return (dispatch) => {
-    getFeeds(`${login}`).then((res) => {
+    fetchFeeds(`${login}`).then((res) => {
       dispatch(success(res.data, normalize(res.data, userFeedsSchema)));
     }).catch((err) => {
       dispatch(error(err));

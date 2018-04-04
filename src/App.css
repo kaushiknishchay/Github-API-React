@@ -28,3 +28,10 @@ body {
 .tab-content{
     padding-bottom: 50px;
 }
+
+.loading{
+    margin: 10px auto;
+    padding: 10px;
+    height: 100px;
+    text-align: center;
+}
