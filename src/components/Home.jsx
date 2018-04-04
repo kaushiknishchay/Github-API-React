@@ -5,7 +5,6 @@ import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
 
-
 import { getUserFeeds, getUserInfo } from '../actions';
 import Profile from './Profile';
 import RepoList from './RepoList';
