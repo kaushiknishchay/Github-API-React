@@ -11,6 +11,6 @@ const userFeedsSchemaItem = new schema.Entity('feed', {
 });
 
 // feedList is an array of userFeedSchemas, so make it an array
-export const userFeedsSchema = [userFeedsSchemaItem];
+const userFeedsSchema = [userFeedsSchemaItem];
 
 export default userFeedsSchema;

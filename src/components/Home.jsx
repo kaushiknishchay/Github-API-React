@@ -53,7 +53,7 @@ class Home extends Component {
     if (nextProps.isAuthenticated && nextProps.user &&
       (nextProps.userFeedsError === null && nextProps.getUserFeedsList === null)) {
       // if feed list empty and if there was an error in fetching last time then dont fetch
-      this.props.getUserFeeds(nextProps.user.login);
+      this.props.fetchUserFeeds(nextProps.user.login);
     }
 
     // user has signed out, fetched public feeds
@@ -228,10 +228,9 @@ class Home extends Component {
 Home.defaultProps = {
   // token: null,
   user: null,
-  // userFeeds: null,
   userFeedsError: null,
   getInfo: () => null,
-  getUserFeeds: () => null,
+  fetchUserFeeds: () => null,
   getUserFeedsList: [],
   loginRequest: false,
   isAuthenticated: localStorage.getItem('auth-token') !== undefined,
@@ -241,12 +240,10 @@ Home.propTypes = {
   // token: PropTypes.string,
   // eslint-disable-next-line react/forbid-prop-types
   user: PropTypes.object,
-  // eslint-disable-next-line react/forbid-prop-types
-  // userFeeds: PropTypes.object,
   getUserFeedsList: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
   userFeedsError: PropTypes.string,
   getInfo: PropTypes.func,
-  getUserFeeds: PropTypes.func,
+  fetchUserFeeds: PropTypes.func,
   isAuthenticated: PropTypes.bool,
   loginRequest: PropTypes.bool,
 };
@@ -255,7 +252,6 @@ function mapState(state) {
   return {
     user: state.getIn(['github', 'user']),
     token: state.getIn(['github', 'token']),
-    // userFeeds: state.getIn(['github', 'userFeeds']),
     userFeedsError: state.getIn(['github', 'userFeedsError']),
     isAuthenticated: state.getIn(['github', 'isAuthenticated']),
     loginRequest: state.getIn(['github', 'loginRequest']),
@@ -267,7 +263,7 @@ function mapState(state) {
 function mapDispatch(dispatch) {
   return bindActionCreators({
     getInfo: getUserInfo,
-    getUserFeeds,
+    fetchUserFeeds: getUserFeeds,
   }, dispatch);
 }
 

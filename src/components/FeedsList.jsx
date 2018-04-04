@@ -11,6 +11,8 @@ const FeedList = ({ feeds }) => (
                 let commitMsg = '';
                 let avatarUrl = null;
                 let loginName = null;
+                let repoUrl = null;
+
 
                 if (feed.created_at) {
                     try {
@@ -38,6 +40,7 @@ const FeedList = ({ feeds }) => (
                 }
 
                 if (feed.repo && feed.repo.name) {
+                    repoUrl = `http://github.com/${feed.repo.name}`;
                     loginName = feed.repo.name;
                 } else {
                     loginName = null;
@@ -46,7 +49,7 @@ const FeedList = ({ feeds }) => (
                 return (
                   <a
                     key={feed.id}
-                    href="/"
+                    href={repoUrl}
                     className="list-group-item list-group-item-action flex-column align-items-start"
                   >
                     <div className="d-flex w-100 justify-content-between">

@@ -1,9 +1,9 @@
 import * as Raven from 'raven-js';
 import { normalize } from 'normalizr';
 
+import userFeedsSchema from '../lib/schema';
 import { getAuthToken, getFeeds, getUserDetails } from '../service/httpFetch';
 import { sentryExtra } from '../lib/utils';
-import { userFeedsSchema } from '../lib/schema';
 
 export const SIGNIN_REQUEST = 'SIGNIN_REQUEST';
 export const SIGNED_IN = 'SIGNED_IN';
@@ -74,7 +74,7 @@ export function getUserFeeds(login) {
   function success(feeds, normalizedFeed) {
     return {
       type: USER_FEEDS,
-      userFeeds: feeds,
+      // userFeeds: feeds,
       normalizedFeed,
     };
   }
