@@ -20,11 +20,10 @@ export default function Header({ isSignIn, onClick }) {
 }
 
 Header.defaultProps = {
-  onClick: e => e,
   isSignIn: false,
 };
 
 Header.propTypes = {
-  onClick: PropTypes.func,
+  onClick: PropTypes.func.isRequired,
   isSignIn: PropTypes.bool,
 };
