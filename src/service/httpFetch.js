@@ -9,17 +9,19 @@ const getDefaultConfig = () => ({
   },
 });
 
+const axiosAuthedGet = url => axios.get(url, getDefaultConfig());
+
 export function fetchAuthToken(token) {
   return axios.get(`${TOKEN_URL}/${token}`);
 }
 
 export function fetchUserDetails() {
-  return axios.get('/user', getDefaultConfig());
+  return axiosAuthedGet('/user'); // axios.get('/user', getDefaultConfig());
 }
 
 
 export function fetchFeeds(username) {
-  return axios.get(`/users/${username}/events`, getDefaultConfig());
+  return axiosAuthedGet(`/users/${username}/events`);
 }
 
 export function fetchPublicFeeds() {
@@ -27,5 +29,5 @@ export function fetchPublicFeeds() {
 }
 
 export function fetchRepos(username) {
-  return axios.get(`/users/${username}/repos`, getDefaultConfig());
+  return axiosAuthedGet(`/users/${username}/repos`);
 }
