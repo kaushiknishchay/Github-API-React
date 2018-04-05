@@ -16,12 +16,19 @@ const getUserFeedsList = createSelector(
   (feedKey, feedList, actorList, reposList) => {
     if (feedKey) {
       const returnFeedList = feedKey.map((key) => {
-        let feedItem = feedList.get(key);
+        const feedItem = feedList.get(key);
         const repoKey = feedItem.get('repo').toString();
         const actorKey = feedItem.get('actor').toString();
-        feedItem = feedItem.set('repo', reposList.get(repoKey));
-        feedItem = feedItem.set('actor', actorList.get(actorKey));
-        return feedItem;
+
+        const newVals = {
+          repo: reposList.get(repoKey).toJS(),
+          actor: actorList.get(actorKey).toJS(),
+        };
+
+        return {
+          ...feedItem.toJS(),
+          ...newVals,
+        };
       });
       return returnFeedList.toJS();
     }

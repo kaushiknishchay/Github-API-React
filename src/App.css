@@ -22,7 +22,7 @@ body {
 .error{
     text-align: center;
     width: 100%;
-    background: #fdfdfd;
+    margin: 10px;
     padding: 40px;
 }
 .tab-content{
@@ -34,4 +34,8 @@ body {
     padding: 10px;
     height: 100px;
     text-align: center;
+}
+
+.tab-pane{
+    padding: 20px 0px 10px;
 }

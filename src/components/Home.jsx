@@ -20,7 +20,7 @@ import TabContent from './Tabs/Content';
 import TabBar from '../containers/Tabs/TabBar';
 
 // eslint-disable-next-line react/prop-types
-const ErrorMsg = ({ msg, errorMsg }) => (<div className="error"><h1>Please try again.</h1> <p>{msg}</p><p>{errorMsg}</p></div>);
+const ErrorMsg = ({ msg, errorMsg }) => (<div className="alert alert-danger error"><h1>Please try again.</h1> <p>{`${msg}`}</p><p>{`${errorMsg}`}</p></div>);
 
 
 class Home extends Component {
@@ -78,16 +78,29 @@ class Home extends Component {
     this.homeRef = null;
   }
 
-  getUserRepos() {
+  getUserRepos(e) {
+    e.preventDefault();
     fetchRepos(this.state.searchRepoUsername).then((res) => {
-      this.setState({
-        repoList: res.data,
-      });
+      console.log(res.data);
+      if (res.data.length > 0) {
+        this.setState({
+          repoList: res.data,
+          isError: 0,
+          errorMsg: '',
+        });
+      } else {
+        this.setState({
+          repoList: [],
+          isError: USER_REPO_ERROR,
+          errorMsg: `No Repos found for "${this.state.searchRepoUsername}"`,
+        });
+      }
     }).catch((err) => {
       // Raven.captureException(err, sentryExtra('Error during fetching user repos'));
       this.setState({
         isError: USER_REPO_ERROR,
         errorMsg: err,
+        repoList: null,
       });
     });
   }
@@ -124,7 +137,7 @@ class Home extends Component {
     } = this.props;
 
     const {
-      repoList, isError, feedList: publicFeedList, errorMsg,
+      repoList, isError, feedList: publicFeedList, errorMsg, searchRepoUsername,
     } = this.state;
 
     const feedList = isAuthenticated ? userFeeds : publicFeedList;
@@ -149,8 +162,15 @@ class Home extends Component {
             </TabContent>
 
             <TabContent name="search">
-              {data && <SearchInput onClick={this.getUserRepos} onChange={this.handleChange} />}
-              {repoError && <ErrorMsg msg="Cant fetch repository list." />}
+              {
+                 data &&
+                 <SearchInput
+                   onClick={this.getUserRepos}
+                   username={searchRepoUsername}
+                   onChange={this.handleChange}
+                 />
+              }
+              {repoError && <ErrorMsg msg="Cant fetch repository list." errorMsg={errorMsg} />}
               <RepoList data={repoList} />
             </TabContent>
 

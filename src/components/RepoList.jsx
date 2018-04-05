@@ -6,15 +6,20 @@ const RepoList = ({ data }) => (
     <ul className="list-group">
       {
             data && data.map(repo => (
-              <li className="list-group-item" key={repo.id}>
-                {repo.name}
-              </li>
+              <a href={repo.html_url} key={repo.id} className="list-group-item list-group-item-action flex-column align-items-start">
+                <div className="d-flex w-100 justify-content-between">
+                  <h5 className="mb-1">{repo.name}</h5>
+                  <span>
+                    &#9733; {repo.watchers_count}
+                  </span>
+                </div>
+                <p className="mb-1">{repo.description}</p>
+              </a>
             ))
         }
     </ul>
   </div>
 );
-
 
 RepoList.propTypes = {
 // eslint-disable-next-line react/forbid-prop-types
