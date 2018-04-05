@@ -8,7 +8,7 @@ import { AUTH_URL } from '../lib/constants';
 import { beginSignIn, signOut } from '../actions';
 
 
-class HeaderContainer extends React.Component {
+export class HeaderContainer extends React.Component {
   constructor(props) {
     super(props);
     this.onClick = this.onClick.bind(this);
@@ -24,11 +24,12 @@ class HeaderContainer extends React.Component {
 
   onClick() {
     const token = localStorage.getItem('auth-token');
-    if (this.props.isSignIn && token !== undefined) {
+
+    if (this.props.isSignIn && token !== undefined && token !== null) {
       try {
         localStorage.removeItem('auth-token');
       } catch (e) {
-        console.error('Couldn\'t delete token from localStorage.');
+        // console.error('Couldn\'t delete token from localStorage.');
       }
       this.props.signOut();
     } else {

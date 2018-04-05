@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import TabItem from '../../components/Tabs/Item';
 
-const TabBar = ({ user }) => (
+export const TabBarC = ({ user }) => (
   <div>
     <br />
     <ul className="nav nav-tabs nav-justified" id="myTab" role="tablist">
@@ -17,11 +17,11 @@ const TabBar = ({ user }) => (
   </div>
 );
 
-TabBar.defaultProps = {
+TabBarC.defaultProps = {
   user: null,
 };
 
-TabBar.propTypes = {
+TabBarC.propTypes = {
   user: PropTypes.object,
 };
 
@@ -31,4 +31,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps, null)(TabBar);
+export default connect(mapStateToProps, null)(TabBarC);
