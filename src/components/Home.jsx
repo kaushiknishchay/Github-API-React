@@ -16,8 +16,8 @@ import SearchInput from './SearchInput';
 import { PUBLIC_FEEDS_ERROR, USER_REPO_ERROR } from '../lib/constants';
 import getUserFeedsList from '../lib/userFeedSelector';
 import ProfileDataList from './ProfileDataList';
-import TabItem from './Tabs/Item';
 import TabContent from './Tabs/Content';
+import TabBar from '../containers/Tabs/TabBar';
 
 // eslint-disable-next-line react/prop-types
 const ErrorMsg = ({ msg, errorMsg }) => (<div className="error"><h1>Please try again.</h1> <p>{msg}</p><p>{errorMsg}</p></div>);
@@ -138,13 +138,7 @@ class Home extends Component {
 
           <Profile data={data} />
 
-          <ul className="nav nav-tabs nav-justified" id="myTab" role="tablist">
-            <TabItem name="feeds" title="Home" active />
-            { data && [
-              <TabItem name="search" key="search" title="Search" />,
-              <TabItem name="profile" key="profile" title="Profile" />]
-            }
-          </ul>
+          <TabBar />
 
           <div className="tab-content" id="myTabContent">
 
