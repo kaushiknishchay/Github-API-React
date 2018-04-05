@@ -1,6 +1,6 @@
 import { fromJS } from 'immutable';
 import gitHub, { initialState } from './githHub';
-import { SIGN_OUT, SIGNED_IN, SIGNIN_REQUEST, USER_DATA } from '../actions';
+import { SIGN_OUT, SIGNED_IN, SIGNIN_REQUEST, USER_DATA, USER_FEEDS, USER_FEEDS_ERROR } from '../actions';
 
 
 // use the httpFetch mock that i created
@@ -10,14 +10,6 @@ describe('github reducer', () => {
   let initialStateLocal;
 
   beforeEach(() => {
-    // initialState = fromJS({
-    //   loginRequest: null,
-    //   token: null,
-    //   user: null,
-    //   isAuthenticated: false,
-    //   userFeeds: null,
-    //   userFeedsError: null,
-    // });
     initialStateLocal = fromJS(initialState);
   });
 
@@ -83,5 +75,39 @@ describe('github reducer', () => {
       normalizedFeed: null,
       userFeedsError: null,
     });
+  });
+
+  it('==> should return userFeeds', () => {
+    const feed = [
+      {
+        id: 1,
+        payload: {},
+      },
+      {
+        id: 2,
+        payload: {
+          commits: {
+            message: 'my commit message',
+          },
+        },
+      },
+    ];
+
+    expect(gitHub(initialState, {
+      type: USER_FEEDS,
+      normalizedFeed: feed,
+    })).toEqual(initialState.merge({
+      normalizedFeed: feed,
+    }));
+  });
+
+  it('==> should return error on UserFeeds', () => {
+    expect(gitHub(initialState, {
+      type: USER_FEEDS_ERROR,
+      error: 'unable to fetch feeds',
+    })).toEqual(initialState.merge({
+      normalizedFeed: null,
+      userFeedsError: 'unable to fetch feeds',
+    }));
   });
 });
