@@ -4,6 +4,9 @@
     "es6": true,
     "jest": true
   },
+  "rules": {
+    "linebreak-style": 0
+  },
   "parser": "babel-eslint",
   "extends": "airbnb",
   "parserOptions": {
