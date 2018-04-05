@@ -1,8 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const TabItem = ({ name, title, active }) => (
-  <li className="nav-item" key={name}>
+const TabItem = ({
+  name, title, active, ...props
+}) => (
+  <li className="nav-item" key={name} {...props}>
     <a
       className={`nav-link ${active ? 'active' : ''}`}
       id={`${name}-tab`}
