@@ -13,13 +13,10 @@ const FeedList = ({ feeds }) => (
                 let loginName = null;
                 let repoUrl = null;
 
-
                 if (feed.created_at) {
-                    try {
-                        timeSince = moment(new Date(feed.created_at)).fromNow();
-                    } catch (e) {
-                        timeSince = '';
-                    }
+                  timeSince = moment(new Date(feed.created_at)).fromNow();
+                } else {
+                  timeSince = '';
                 }
 
                 if (feed.payload) {
@@ -69,12 +66,8 @@ const FeedList = ({ feeds }) => (
   </div>
 );
 
-FeedList.defaultProps = {
-  feeds: [],
-};
-
 FeedList.propTypes = {
-  feeds: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
+  feeds: PropTypes.oneOfType([PropTypes.array, PropTypes.object]).isRequired,
 };
 
 export default FeedList;
