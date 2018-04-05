@@ -123,6 +123,11 @@ class Home extends Component {
 
   // eslint-disable-next-line class-methods-use-this
   componentDidCatch(error, errorInfo) {
+    if (this.props.isAuthenticated) {
+      Raven.setUserContext({
+        email: this.props.user.login,
+      });
+    }
     Raven.captureException(error, { extra: errorInfo });
   }
 
