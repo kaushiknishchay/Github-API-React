@@ -81,7 +81,6 @@ class Home extends Component {
   getUserRepos(e) {
     e.preventDefault();
     fetchRepos(this.state.searchRepoUsername).then((res) => {
-      console.log(res.data);
       if (res.data.length > 0) {
         this.setState({
           repoList: res.data,
