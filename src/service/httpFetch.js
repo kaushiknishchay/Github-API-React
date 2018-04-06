@@ -20,12 +20,12 @@ export function fetchUserDetails() {
 }
 
 
-export function fetchFeeds(username) {
-  return axiosAuthedGet(`/users/${username}/events`);
+export function fetchFeeds(username, pageNum = 1) {
+  return axiosAuthedGet(`/users/${username}/events?page=${pageNum}`);
 }
 
-export function fetchPublicFeeds() {
-  return axios.get(`${ROOT_URL}/events`);
+export function fetchPublicFeeds(pageNum = 1) {
+  return axios.get(`${ROOT_URL}/events?page=${pageNum}`);
 }
 
 export function fetchRepos(username) {

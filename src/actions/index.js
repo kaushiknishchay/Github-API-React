@@ -12,6 +12,8 @@ export const SIGN_OUT = 'SIGN_OUT';
 export const USER_DATA = 'USER_DATA';
 export const USER_FEEDS = 'USER_FEEDS';
 export const USER_FEEDS_ERROR = 'USER_FEEDS_ERROR';
+export const USER_FEEDS_UPDATE = 'USER_FEEDS_UPDATE';
+export const USER_FEEDS_UPDATE_OVER = 'USER_FEEDS_UPDATE_OVER';
 
 export function beginSignIn(authCode) {
   function start() {
@@ -70,11 +72,17 @@ export function getUserInfo() {
   };
 }
 
-export function getUserFeeds(login) {
+export function getUserFeeds(login, pageNum = 1) {
   function success(feeds, normalizedFeed) {
     return {
       type: USER_FEEDS,
-      // userFeeds: feeds,
+      normalizedFeed,
+    };
+  }
+
+  function updateFeed(normalizedFeed) {
+    return {
+      type: USER_FEEDS_UPDATE,
       normalizedFeed,
     };
   }
@@ -86,9 +94,25 @@ export function getUserFeeds(login) {
     };
   }
 
+  function feedExhaust() {
+    return {
+      type: USER_FEEDS_UPDATE_OVER,
+      error: 'No more feeds to fetch',
+    };
+  }
+
   return (dispatch) => {
-    fetchFeeds(`${login}`).then((res) => {
-      dispatch(success(res.data, normalize(res.data, userFeedsSchema)));
+    fetchFeeds(`${login}`, pageNum).then((res) => {
+      if (pageNum > 1) {
+        if (res.data.length > 0) {
+          const normalFeed = normalize(res.data, userFeedsSchema);
+          dispatch(updateFeed(normalFeed));
+        }else{
+          dispatch(feedExhaust());
+        }
+      } else {
+        dispatch(success(res.data, normalize(res.data, userFeedsSchema)));
+      }
     }).catch((err) => {
       dispatch(error(err));
       // Raven.captureException(err, sentryExtra('Error while fetching user feeds'));

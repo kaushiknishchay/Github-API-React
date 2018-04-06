@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+/* eslint-disable no-unused-vars,class-methods-use-this */
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -22,6 +22,10 @@ import TabBar from '../containers/Tabs/TabBar';
 // eslint-disable-next-line react/prop-types
 const ErrorMsg = ({ msg, errorMsg }) => (<div className="alert alert-danger error"><h1>Please try again.</h1> <p>{`${msg}`}</p><p>{`${errorMsg}`}</p></div>);
 
+const OverMsg = ({ msg }) => (<div className="alert alert-info"><p>{`${msg}`}</p></div>);
+OverMsg.propTypes = {
+  msg: PropTypes.string.isRequired,
+};
 
 class Home extends Component {
   constructor(props) {
@@ -32,11 +36,14 @@ class Home extends Component {
       feedList: [],
       isError: 0,
       errorMsg: '',
+      userFeedPageNum: 2,
+      publicFeedPageNum: 2,
     };
     this.homeRef = null;
     this.getUserRepos = this.getUserRepos.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.getPublicFeed = this.getPublicFeed.bind(this);
+    this.getMoreFeeds = this.getMoreFeeds.bind(this);
   }
 
   componentDidMount() {
@@ -104,17 +111,33 @@ class Home extends Component {
     });
   }
 
+  getMoreFeeds() {
+    const { isAuthenticated, user } = this.props;
+    const { userFeedPageNum, isError, publicFeedPageNum } = this.state;
 
-  getPublicFeed() {
+    if (isAuthenticated) { // if logged in fetch user feeds
+      this.props.fetchUserFeeds(user.login, userFeedPageNum);
+      this.setState((state, props) => ({
+        userFeedPageNum: state.userFeedPageNum + 1,
+      }));
+    } else if (isError) {
+      this.getPublicFeed(publicFeedPageNum);
+      this.setState((state, props) => ({
+        publicFeedPageNum: state.publicFeedPageNum + 1,
+      }));
+    }
+  }
+
+  getPublicFeed(pageNum) {
     if (this.homeRef) {
-      fetchPublicFeeds().then((res) => {
+      fetchPublicFeeds(pageNum).then((res) => {
         this.setState({
           feedList: res.data,
         });
       }).catch((err) => {
         this.setState({
           isError: PUBLIC_FEEDS_ERROR,
-          errorMsg: err,
+          errorMsg: `${err.toString().includes('403')}` ? 'API Limit Exceeded' : '',
         });
       });
     }
@@ -137,7 +160,7 @@ class Home extends Component {
   render() {
     const {
       user: data, userFeedsError, isAuthenticated,
-      getUserFeedsList: userFeeds,
+      getUserFeedsList: userFeeds, feedExhaustError,
     } = this.props;
 
     const {
@@ -162,7 +185,8 @@ class Home extends Component {
             <TabContent name="feeds" active>
               {feedError && <ErrorMsg msg="Can not fetch feeds." errorMsg={errorMsg} />}
               {showSpinner && <Spinner name="line-scale" className="loading" />}
-              <FeedList feeds={feedList} />
+              <FeedList feeds={feedList} getMoreFeeds={this.getMoreFeeds} />
+              {feedExhaustError && <OverMsg msg={feedExhaustError} />}
             </TabContent>
 
             <TabContent name="search">
@@ -198,6 +222,7 @@ Home.defaultProps = {
   getUserFeedsList: [],
   loginRequest: false,
   isAuthenticated: localStorage.getItem('auth-token') !== undefined,
+  feedExhaustError: null,
 };
 
 Home.propTypes = {
@@ -205,11 +230,12 @@ Home.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   user: PropTypes.object,
   getUserFeedsList: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
-  userFeedsError: PropTypes.string,
+  userFeedsError: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   getInfo: PropTypes.func,
   fetchUserFeeds: PropTypes.func,
   isAuthenticated: PropTypes.bool,
   loginRequest: PropTypes.bool,
+  feedExhaustError: PropTypes.string,
 };
 
 function mapState(state) {
@@ -217,6 +243,7 @@ function mapState(state) {
     user: state.getIn(['github', 'user']),
     token: state.getIn(['github', 'token']),
     userFeedsError: state.getIn(['github', 'userFeedsError']),
+    feedExhaustError: state.getIn(['github', 'feedExhaustError']),
     isAuthenticated: state.getIn(['github', 'isAuthenticated']),
     loginRequest: state.getIn(['github', 'loginRequest']),
     getUserFeedsList: getUserFeedsList(state),

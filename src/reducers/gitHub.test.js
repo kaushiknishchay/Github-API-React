@@ -1,6 +1,14 @@
 import { fromJS } from 'immutable';
 import gitHub, { initialState } from './githHub';
-import { SIGN_OUT, SIGNED_IN, SIGNIN_REQUEST, USER_DATA, USER_FEEDS, USER_FEEDS_ERROR } from '../actions';
+import {
+  SIGN_OUT,
+  SIGNED_IN,
+  SIGNIN_REQUEST,
+  USER_DATA,
+  USER_FEEDS,
+  USER_FEEDS_ERROR,
+  USER_FEEDS_UPDATE_OVER,
+} from '../actions';
 
 
 // use the httpFetch mock that i created
@@ -74,6 +82,7 @@ describe('github reducer', () => {
       isAuthenticated: true,
       normalizedFeed: null,
       userFeedsError: null,
+      feedExhaustError: null,
     });
   });
 
@@ -108,6 +117,15 @@ describe('github reducer', () => {
     })).toEqual(initialState.merge({
       normalizedFeed: null,
       userFeedsError: 'unable to fetch feeds',
+    }));
+  });
+
+  it('==> should return error on UserFeeds Update', () => {
+    expect(gitHub(initialState, {
+      type: USER_FEEDS_UPDATE_OVER,
+      error: 'no more feeds',
+    })).toEqual(initialState.merge({
+      feedExhaustError: 'no more feeds',
     }));
   });
 });
