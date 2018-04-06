@@ -6,7 +6,7 @@ import {
   SIGNIN_REQUEST,
   USER_DATA,
   USER_FEEDS,
-  USER_FEEDS_ERROR,
+  USER_FEEDS_ERROR, USER_FEEDS_UPDATE,
   USER_FEEDS_UPDATE_OVER,
 } from '../actions';
 
@@ -118,6 +118,47 @@ describe('github reducer', () => {
       normalizedFeed: null,
       userFeedsError: 'unable to fetch feeds',
     }));
+  });
+
+  it('==> should update userFeeds', () => {
+    const feed1 = {
+      result: [1, 2],
+      entities: {
+        actor: { 1: { login: 'user' } },
+        repo: { 1: { name: 'repoDummy' } },
+        feed: { 1: { type: 'PushEvent' }, 2: { type: 'PullEvent' } },
+      },
+    };
+
+    const feed2 = {
+      result: [3, 4],
+      entities: {
+        actor: { 2: { login: 'user2' } },
+        repo: { 1: { name: 'repoDummy' } },
+        feed: { 3: { type: 'CommitEvent' }, 4: { type: 'FetchEvent' } },
+      },
+    };
+
+    const mergedFeeds = {
+      result: [1, 2, 3, 4],
+      entities: {
+        actor: { 1: { login: 'user' }, 2: { login: 'user2' } },
+        repo: { 1: { name: 'repoDummy' } },
+        feed: {
+          1: { type: 'PushEvent' }, 2: { type: 'PullEvent' }, 3: { type: 'CommitEvent' }, 4: { type: 'FetchEvent' },
+        },
+      },
+    };
+
+    const newState = gitHub(initialState, {
+      type: USER_FEEDS,
+      normalizedFeed: feed1,
+    });
+
+    expect(gitHub(newState, {
+      type: USER_FEEDS_UPDATE,
+      normalizedFeed: feed2,
+    }).get('normalizedFeed').toJS()).toEqual(mergedFeeds);
   });
 
   it('==> should return error on UserFeeds Update', () => {
