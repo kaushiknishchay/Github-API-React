@@ -149,7 +149,8 @@ class Home extends Component {
       this.setState((state, props) => ({
         userFeedPageNum: state.userFeedPageNum + 1,
       }));
-    } else if (isError) {
+    }
+    if (isError !== PUBLIC_FEEDS_ERROR) {
       this.getPublicFeed(publicFeedPageNum);
       this.setState((state, props) => ({
         publicFeedPageNum: state.publicFeedPageNum + 1,
@@ -160,9 +161,17 @@ class Home extends Component {
   getPublicFeed(pageNum) {
     if (this.homeRef) {
       fetchPublicFeeds(pageNum).then((res) => {
-        this.setState({
-          feedList: res.data,
-        });
+        if (pageNum <= 1) {
+          this.setState({
+            feedList: res.data,
+            repoList: [],
+          });
+        } else {
+          this.setState((state, props) => ({
+            feedList: state.feedList.concat(res.data),
+            repoList: [],
+          }));
+        }
       }).catch((err) => {
         this.setState({
           isError: PUBLIC_FEEDS_ERROR,
@@ -209,14 +218,14 @@ class Home extends Component {
 
           <div className="tab-content" id="myTabContent">
 
-            <TabContent name="feeds">
+            <TabContent name="feeds" active>
               {feedError && <ErrorMsg msg="Can not fetch feeds." errorMsg={errorMsg} />}
               {showSpinner && <Spinner name="line-scale" className="loading" />}
               <FeedList feeds={feedList} getMoreFeeds={this.getMoreFeeds} />
               {feedExhaustError && <OverMsg msg={feedExhaustError} />}
             </TabContent>
 
-            <TabContent name="search" active>
+            <TabContent name="search">
               {
                  data &&
                  <SearchInput
