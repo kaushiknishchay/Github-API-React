@@ -29,9 +29,8 @@ class FeedList extends Component {
     if (feedsTabActive && this.isBottom(bodyTag)) {
       // const { feeds } = this.props;
       this.props.getMoreFeeds();
-      // if (feeds !== undefined && feeds !== null && feeds.length > 0) {
-      //   document.getElementById(feeds[feeds.length - 1].id).scrollIntoView();
-      // }
+
+      // @TODO: use this  with FeedList component and remove garbage
     }
   }
 
