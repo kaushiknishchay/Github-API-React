@@ -21,7 +21,8 @@ class FeedList extends Component {
 
   async bottomDetect() {
     const bodyTag = document.getElementsByTagName('body')[0];
-    if (this.isBottom(bodyTag)) {
+    const feedsTabActive = document.getElementById('feeds').classList.contains('active');
+    if (feedsTabActive && this.isBottom(bodyTag)) {
       const { feeds } = this.props;
       await this.props.getMoreFeeds();
       if (feeds !== undefined && feeds !== null && feeds.length > 0) {

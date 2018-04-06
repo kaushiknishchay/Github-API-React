@@ -47,10 +47,10 @@ export function fetchPublicFeeds() {
 }
 //
 // // noinspection JSUnusedGlobalSymbols
-// export function fetchRepos(searchRepoUsername) {
+// export function fetchRepos(searchQuery) {
 //     return axios({
 //         method: "GET",
-//         url: ROOT_URL + "/users/" + searchRepoUsername + "/repos",
+//         url: ROOT_URL + "/users/" + searchQuery + "/repos",
 //         headers: {
 //             Authorization: "token " + localStorage.getItem('auth-token')
 //         }

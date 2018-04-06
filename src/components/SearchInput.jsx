@@ -1,42 +1,84 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const SearchInput = props => (
-  <form onSubmit={props.onClick}>
+class SearchInput extends React.Component {
+  constructor(props) {
+    super(props);
+    this.onChange = this.onChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
 
-    <div className="input-group mr-3">
-      <div className="input-group-prepend">
-        <span className="input-group-text" id="inputGroup-sizing-default">
-              Enter Username
-        </span>
-      </div>
-      <input
-        type="text"
-        className="form-control"
-        aria-label="Default"
-        onChange={props.onChange}
-      />
-      <button
-        type="button"
-        className="ml-3 btn btn-primary"
-        onClick={props.onClick}
-        disabled={!((props.username.length > 0))}
-      >
-      Search
-      </button>
-    </div>
-  </form>
-);
+    this.state = {
+      query: '',
+      type: 'repo',
+    };
+  }
+
+  componentWillMount() {
+    this.timer = null;
+  }
+
+
+  onChange(e) {
+    clearTimeout(this.timer);
+    this.setState({
+      [e.target.name]: e.target.value,
+    });
+
+    this.timer = setTimeout(() => {
+      if (this.state.query && this.state.query.length >= 3 && this.state.type) {
+        this.props.onClick(this.state.type, this.state.query);
+      }
+    }, 1000);
+  }
+
+  handleSubmit(e) {
+    e.preventDefault();
+    this.props.onClick(this.state.type, this.state.query);
+  }
+
+
+  render() {
+    return (
+      <form>
+        <div className="input-group mr-3">
+          <div className="input-group-prepend">
+            <select
+              name="type"
+              id="type"
+              className="input-group-text"
+              onChange={this.onChange}
+              defaultValue="repo"
+            >
+              <option value="repo">Search Repos By Name</option>
+              <option value="user">Find Users all repo</option>
+            </select>
+          </div>
+          <input
+            type="text"
+            className="form-control"
+            aria-label="Default"
+            name="query"
+            onChange={this.onChange}
+          />
+          <button
+            type="button"
+            className="ml-3 btn btn-primary"
+            onClick={this.handleSubmit}
+            disabled={!((this.state.query.length >= 3))}
+          >
+          Search
+          </button>
+        </div>
+      </form>
+    );
+  }
+}
 SearchInput.defaultProps = {
-  onChange: () => null,
-  username: '',
   onClick: () => null,
 };
 
 SearchInput.propTypes = {
-  onChange: PropTypes.func,
   onClick: PropTypes.func,
-  username: PropTypes.string,
 };
 
 export default SearchInput;

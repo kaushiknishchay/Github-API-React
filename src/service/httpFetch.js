@@ -24,6 +24,10 @@ export function fetchFeeds(username, pageNum = 1) {
   return axiosAuthedGet(`/users/${username}/events?page=${pageNum}`);
 }
 
+export function fetchReposByName(repoName) {
+  return axiosAuthedGet(`/search/repositories?q=${repoName}`);
+}
+
 export function fetchPublicFeeds(pageNum = 1) {
   return axios.get(`${ROOT_URL}/events?page=${pageNum}`);
 }

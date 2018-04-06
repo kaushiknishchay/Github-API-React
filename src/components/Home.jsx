@@ -10,7 +10,7 @@ import Spinner from 'react-spinkit';
 import { getUserFeeds, getUserInfo } from '../actions';
 import Profile from './Profile';
 import RepoList from './RepoList';
-import { fetchPublicFeeds, fetchRepos } from '../service/httpFetch';
+import { fetchPublicFeeds, fetchRepos, fetchReposByName } from '../service/httpFetch';
 import FeedList from './FeedsList';
 import SearchInput from './SearchInput';
 import { PUBLIC_FEEDS_ERROR, USER_REPO_ERROR } from '../lib/constants';
@@ -31,7 +31,6 @@ class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      searchRepoUsername: '',
       repoList: [],
       feedList: [],
       isError: 0,
@@ -41,9 +40,9 @@ class Home extends Component {
     };
     this.homeRef = null;
     this.getUserRepos = this.getUserRepos.bind(this);
-    this.handleChange = this.handleChange.bind(this);
     this.getPublicFeed = this.getPublicFeed.bind(this);
     this.getMoreFeeds = this.getMoreFeeds.bind(this);
+    this.onSearchSubmit = this.onSearchSubmit.bind(this);
   }
 
   componentDidMount() {
@@ -85,9 +84,39 @@ class Home extends Component {
     this.homeRef = null;
   }
 
-  getUserRepos(e) {
-    e.preventDefault();
-    fetchRepos(this.state.searchRepoUsername).then((res) => {
+
+  onSearchSubmit(t, q) {
+    if (t === 'repo') {
+      this.setState({
+        repoList: [],
+      });
+      this.getReposByName(q);
+    } else if (t === 'user') {
+      this.setState({
+        repoList: [],
+      });
+      this.getUserRepos(q);
+    }
+  }
+
+  getReposByName(searchQuery) {
+    fetchReposByName(searchQuery).then((res) => {
+      this.setState({
+        repoList: res.data.items,
+        isError: 0,
+        errorMsg: '',
+      });
+    }).catch((e) => {
+      this.setState({
+        repoList: [],
+        isError: USER_REPO_ERROR,
+        errorMsg: 'Cant fetch repo list.',
+      });
+    });
+  }
+
+  getUserRepos(searchQuery) {
+    fetchRepos(searchQuery).then((res) => {
       if (res.data.length > 0) {
         this.setState({
           repoList: res.data,
@@ -98,7 +127,7 @@ class Home extends Component {
         this.setState({
           repoList: [],
           isError: USER_REPO_ERROR,
-          errorMsg: `No Repos found for "${this.state.searchRepoUsername}"`,
+          errorMsg: `No Repos found for "${searchQuery}"`,
         });
       }
     }).catch((err) => {
@@ -143,6 +172,7 @@ class Home extends Component {
     }
   }
 
+
   // eslint-disable-next-line class-methods-use-this
   componentDidCatch(error, errorInfo) {
     if (this.props.isAuthenticated) {
@@ -153,9 +183,6 @@ class Home extends Component {
     Raven.captureException(error, { extra: errorInfo });
   }
 
-  handleChange = e => this.setState({
-    searchRepoUsername: e.target.value,
-  });
 
   render() {
     const {
@@ -164,7 +191,7 @@ class Home extends Component {
     } = this.props;
 
     const {
-      repoList, isError, feedList: publicFeedList, errorMsg, searchRepoUsername,
+      repoList, isError, feedList: publicFeedList, errorMsg, searchQuery,
     } = this.state;
 
     const feedList = isAuthenticated ? userFeeds : publicFeedList;
@@ -182,20 +209,19 @@ class Home extends Component {
 
           <div className="tab-content" id="myTabContent">
 
-            <TabContent name="feeds" active>
+            <TabContent name="feeds">
               {feedError && <ErrorMsg msg="Can not fetch feeds." errorMsg={errorMsg} />}
               {showSpinner && <Spinner name="line-scale" className="loading" />}
               <FeedList feeds={feedList} getMoreFeeds={this.getMoreFeeds} />
               {feedExhaustError && <OverMsg msg={feedExhaustError} />}
             </TabContent>
 
-            <TabContent name="search">
+            <TabContent name="search" active>
               {
                  data &&
                  <SearchInput
-                   onClick={this.getUserRepos}
-                   username={searchRepoUsername}
-                   onChange={this.handleChange}
+                   onClick={this.onSearchSubmit}
+                   username={searchQuery}
                  />
               }
               {repoError && <ErrorMsg msg="Cant fetch repository list." errorMsg={errorMsg} />}
