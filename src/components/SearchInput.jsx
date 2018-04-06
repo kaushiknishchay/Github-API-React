@@ -9,7 +9,7 @@ class SearchInput extends React.Component {
 
     this.state = {
       query: '',
-      type: 'repo',
+      type: '',
     };
   }
 
@@ -24,6 +24,9 @@ class SearchInput extends React.Component {
       [e.target.name]: e.target.value,
     });
 
+    this.props.onChange(e);
+
+    // auto search without clicking the button
     this.timer = setTimeout(() => {
       if (this.state.query && this.state.query.length >= 3 && this.state.type) {
         this.props.onClick(this.state.type, this.state.query);
@@ -39,7 +42,7 @@ class SearchInput extends React.Component {
 
   render() {
     return (
-      <form>
+      <form onSubmit={this.handleSubmit}>
         <div className="input-group mr-3">
           <div className="input-group-prepend">
             <select
@@ -47,8 +50,9 @@ class SearchInput extends React.Component {
               id="type"
               className="input-group-text"
               onChange={this.onChange}
-              defaultValue="repo"
+              defaultValue=""
             >
+              <option value="">Select</option>
               <option value="repo">Search Repos By Name</option>
               <option value="user">Find Users all repo</option>
             </select>
@@ -76,6 +80,7 @@ class SearchInput extends React.Component {
 
 SearchInput.propTypes = {
   onClick: PropTypes.func.isRequired,
+  onChange: PropTypes.func.isRequired,
 };
 
 export default SearchInput;

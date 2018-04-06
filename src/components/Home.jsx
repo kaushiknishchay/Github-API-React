@@ -18,6 +18,7 @@ import getUserFeedsList from '../lib/userFeedSelector';
 import ProfileDataList from './ProfileDataList';
 import TabContent from './Tabs/Content';
 import TabBar from '../containers/Tabs/TabBar';
+import withBottomScroll from '../hoc/withBottomScroll';
 
 // eslint-disable-next-line react/prop-types
 const ErrorMsg = ({ msg, errorMsg }) => (<div className="alert alert-danger error"><h1>Please try again.</h1> <p>{`${msg}`}</p><p>{`${errorMsg}`}</p></div>);
@@ -37,12 +38,15 @@ class Home extends Component {
       errorMsg: '',
       userFeedPageNum: 2,
       publicFeedPageNum: 2,
+      repoSearchPageNum: 2,
     };
     this.homeRef = null;
     this.getUserRepos = this.getUserRepos.bind(this);
     this.getPublicFeed = this.getPublicFeed.bind(this);
     this.getMoreFeeds = this.getMoreFeeds.bind(this);
+    this.getMoreRepos = this.getMoreRepos.bind(this);
     this.onSearchSubmit = this.onSearchSubmit.bind(this);
+    this.handleSearchChange = this.handleSearchChange.bind(this);
   }
 
   componentDidMount() {
@@ -89,40 +93,62 @@ class Home extends Component {
     if (t === 'repo') {
       this.setState({
         repoList: [],
+        repoSearchPageNum: 2,
       });
       this.getReposByName(q);
     } else if (t === 'user') {
       this.setState({
+        repoSearchPageNum: 2,
         repoList: [],
       });
       this.getUserRepos(q);
     }
   }
 
-  getReposByName(searchQuery) {
-    fetchReposByName(searchQuery).then((res) => {
-      this.setState({
-        repoList: res.data.items,
-        isError: 0,
-        errorMsg: '',
-      });
+  getReposByName(searchQuery, pageNum = 1) {
+    fetchReposByName(searchQuery, pageNum).then((res) => {
+      if (pageNum > 1) {
+        this.setState((state, props) => ({
+          repoList: state.repoList.concat(res.data.items),
+          isError: 0,
+          errorMsg: '',
+          repoSearchPageNum: state.repoSearchPageNum + 1,
+        }));
+      } else {
+        this.setState({
+          repoList: res.data.items,
+          isError: 0,
+          errorMsg: '',
+        });
+      }
     }).catch((e) => {
       this.setState({
         repoList: [],
         isError: USER_REPO_ERROR,
+        repoSearchPageNum: 2,
         errorMsg: 'Cant fetch repo list.',
       });
     });
   }
 
-  getUserRepos(searchQuery) {
-    fetchRepos(searchQuery).then((res) => {
+  getUserRepos(searchQuery, pageNum = 1) {
+    fetchRepos(searchQuery, pageNum).then((res) => {
       if (res.data.length > 0) {
-        this.setState({
-          repoList: res.data,
-          isError: 0,
-          errorMsg: '',
-        });
+        if (pageNum > 1) {
+          this.setState((s, p) => ({
+            repoList: s.repoList.concat(res.data),
+            isError: 0,
+            errorMsg: '',
+            repoSearchPageNum: s.repoSearchPageNum + 1,
+          }));
+        } else {
+          this.setState({
+            repoList: res.data,
+            isError: 0,
+            errorMsg: '',
+            repoSearchPageNum: 2,
+          });
+        }
       } else {
         this.setState({
           repoList: [],
@@ -135,6 +161,7 @@ class Home extends Component {
       this.setState({
         isError: USER_REPO_ERROR,
         errorMsg: err,
+        repoSearchPageNum: 2,
         repoList: null,
       });
     });
@@ -182,6 +209,31 @@ class Home extends Component {
   }
 
 
+  getMoreRepos() {
+    if (this.searchType && this.searchQuery && this.searchQuery.length >= 3) {
+      if (this.searchType === 'repo') {
+        this.getReposByName(this.searchQuery, this.state.repoSearchPageNum);
+      }
+      if (this.searchType === 'user') {
+        this.getUserRepos(this.searchQuery, this.state.repoSearchPageNum);
+      }
+    }
+  }
+
+  handleSearchChange(e) {
+    if (e.target) {
+      if (e.target.name === 'type') {
+        this.searchType = e.target.value;
+      } else if (e.target.name === 'query') {
+        this.searchQuery = e.target.value;
+      }
+    }
+  }
+
+  searchQuery = '';
+  searchType= '';
+
+
   // eslint-disable-next-line class-methods-use-this
   componentDidCatch(error, errorInfo) {
     if (this.props.isAuthenticated) {
@@ -208,6 +260,8 @@ class Home extends Component {
     const feedError = isError === PUBLIC_FEEDS_ERROR || userFeedsError !== null;
     const repoError = isError === USER_REPO_ERROR;
 
+    const RepoListAdv = withBottomScroll(RepoList, 'search', this.getMoreRepos);
+
     return (
       <div className="row" ref={(re) => { this.homeRef = re; }}>
         <div className="col-lg-12">
@@ -229,12 +283,13 @@ class Home extends Component {
               {
                  data &&
                  <SearchInput
+                   onChange={this.handleSearchChange}
                    onClick={this.onSearchSubmit}
                    username={searchQuery}
                  />
               }
               {repoError && <ErrorMsg msg="Cant fetch repository list." errorMsg={errorMsg} />}
-              <RepoList data={repoList} />
+              <RepoListAdv data={repoList} />
             </TabContent>
 
             <TabContent name="profile">

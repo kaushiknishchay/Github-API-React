@@ -24,14 +24,14 @@ export function fetchFeeds(username, pageNum = 1) {
   return axiosAuthedGet(`/users/${username}/events?page=${pageNum}`);
 }
 
-export function fetchReposByName(repoName) {
-  return axiosAuthedGet(`/search/repositories?q=${repoName}`);
+export function fetchReposByName(repoName, pageNum = 1) {
+  return axiosAuthedGet(`/search/repositories?q=${repoName}&page=${pageNum}`);
 }
 
 export function fetchPublicFeeds(pageNum = 1) {
   return axios.get(`${ROOT_URL}/events?page=${pageNum}`);
 }
 
-export function fetchRepos(username) {
-  return axiosAuthedGet(`/users/${username}/repos`);
+export function fetchRepos(username, pageNum = 1) {
+  return axiosAuthedGet(`/users/${username}/repos?page=${pageNum}`);
 }

@@ -19,7 +19,7 @@ class FeedList extends Component {
     document.removeEventListener('scroll', this.bottomDetect);
   }
 
-  async bottomDetect() {
+  bottomDetect() {
     const bodyTag = document.getElementsByTagName('body')[0];
     let feedsTabActive = true;
     if (document.getElementById('feeds')) {
@@ -27,11 +27,11 @@ class FeedList extends Component {
     }
 
     if (feedsTabActive && this.isBottom(bodyTag)) {
-      const { feeds } = this.props;
-      await this.props.getMoreFeeds();
-      if (feeds !== undefined && feeds !== null && feeds.length > 0) {
-        document.getElementById(feeds[feeds.length - 1].id).scrollIntoView();
-      }
+      // const { feeds } = this.props;
+      this.props.getMoreFeeds();
+      // if (feeds !== undefined && feeds !== null && feeds.length > 0) {
+      //   document.getElementById(feeds[feeds.length - 1].id).scrollIntoView();
+      // }
     }
   }
 
