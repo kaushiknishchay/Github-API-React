@@ -73,12 +73,9 @@ class SearchInput extends React.Component {
     );
   }
 }
-SearchInput.defaultProps = {
-  onClick: () => null,
-};
 
 SearchInput.propTypes = {
-  onClick: PropTypes.func,
+  onClick: PropTypes.func.isRequired,
 };
 
 export default SearchInput;
