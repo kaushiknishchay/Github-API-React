@@ -12,7 +12,7 @@ import getUserFeedsList from '../lib/userFeedSelector';
 import { getUserFeeds } from '../actions';
 import { ErrorMsg, OverMsg } from '../components/InfoMessage';
 
-class UserFeed extends Component {
+export class UserFeedC extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -62,7 +62,7 @@ class UserFeed extends Component {
   }
 }
 
-UserFeed.defaultProps = {
+UserFeedC.defaultProps = {
   user: null,
   userFeedsError: {
     type: '',
@@ -74,7 +74,7 @@ UserFeed.defaultProps = {
 };
 
 
-UserFeed.propTypes = {
+UserFeedC.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   user: PropTypes.object,
   getUserFeedsList: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
@@ -99,4 +99,4 @@ function initMapDispatchToProps(dispatch) {
   }, dispatch);
 }
 
-export default connect(initMapStateToProps, initMapDispatchToProps)(UserFeed);
+export default connect(initMapStateToProps, initMapDispatchToProps)(UserFeedC);

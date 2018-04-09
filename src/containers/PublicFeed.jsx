@@ -7,7 +7,7 @@ import withBottomScroll from '../hoc/withBottomScroll';
 import FeedList from '../components/FeedsList';
 import { ErrorMsg, OverMsg } from '../components/InfoMessage';
 
-class PublicFeed extends Component {
+export class PublicFeedC extends Component {
   constructor(props) {
     super(props);
     this.getPublicFeed = this.getPublicFeed.bind(this);
@@ -73,6 +73,7 @@ class PublicFeed extends Component {
         });
       });
     }
+    return '';
   }
 
   render() {
@@ -99,6 +100,6 @@ class PublicFeed extends Component {
   }
 }
 
-PublicFeed.propTypes = {};
+PublicFeedC.propTypes = {};
 
-export default PublicFeed;
+export default PublicFeedC;
