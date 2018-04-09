@@ -4,23 +4,21 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
-import Spinner from 'react-spinkit';
 
 
-import { getUserFeeds, getUserInfo } from '../actions';
+import { getUserInfo } from '../actions';
 import Profile from './Profile';
 import RepoList from './RepoList';
 import { fetchRepos, fetchReposByName } from '../service/httpFetch';
-import FeedList from './FeedsList';
 import SearchInput from './SearchInput';
 import { USER_REPO_ERROR } from '../lib/constants';
-import getUserFeedsList from '../lib/userFeedSelector';
 import ProfileDataList from './ProfileDataList';
 import TabContent from './Tabs/Content';
 import TabBar from '../containers/Tabs/TabBar';
 import withBottomScroll from '../hoc/withBottomScroll';
-import { ErrorMsg, OverMsg } from './InfoMessage';
+import { ErrorMsg } from './InfoMessage';
 import PublicFeed from '../containers/PublicFeed';
+import UserFeed from '../containers/UserFeed';
 
 class Home extends Component {
   constructor(props) {
@@ -29,11 +27,9 @@ class Home extends Component {
       repoList: [],
       isError: 0,
       errorMsg: '',
-      userFeedPageNum: 2,
       repoSearchPageNum: 2,
     };
     this.getUserRepos = this.getUserRepos.bind(this);
-    this.getMoreFeeds = this.getMoreFeeds.bind(this);
     this.getMoreRepos = this.getMoreRepos.bind(this);
     this.onSearchSubmit = this.onSearchSubmit.bind(this);
     this.handleSearchChange = this.handleSearchChange.bind(this);
@@ -50,13 +46,6 @@ class Home extends Component {
     // user just signed in, and data isn't fetched so fetch data
     if (nextProps.isAuthenticated && !nextProps.user) {
       this.props.getInfo();
-    }
-
-    // user is logged in, user data is fetched, so fetch user feeds list
-    if (nextProps.isAuthenticated && nextProps.user &&
-      (nextProps.userFeedsError.get('type') === '' && nextProps.getUserFeedsList === null)) {
-      // if feed list empty and if there was an error in fetching last time then dont fetch
-      this.props.fetchUserFeeds(nextProps.user.login);
     }
   }
 
@@ -138,19 +127,6 @@ class Home extends Component {
     });
   }
 
-  getMoreFeeds() {
-    const { isAuthenticated, user, userFeedsError } = this.props;
-    const { userFeedPageNum } = this.state;
-
-    if (isAuthenticated && user && userFeedsError.get('type') !== 'over') {
-      // if logged in fetch user feeds
-      this.props.fetchUserFeeds(user.login, userFeedPageNum);
-      this.setState((state, props) => ({
-        userFeedPageNum: state.userFeedPageNum + 1,
-      }));
-    }
-  }
-
   getMoreRepos() {
     if (this.searchType && this.searchQuery && this.searchQuery.length >= 3) {
       if (this.searchType === 'repo') {
@@ -201,18 +177,13 @@ class Home extends Component {
     }
 
     const {
-      user: data, userFeedsError, isAuthenticated,
-      getUserFeedsList: userFeeds,
+      user: data,
     } = this.props;
 
     const {
       repoList, isError, errorMsg, searchQuery,
     } = this.state;
 
-    const feedList = isAuthenticated ? userFeeds : [];
-    const showSpinner = isError === 0 && (feedList === null || feedList.length === 0);
-    const feedError = userFeedsError.get('type') === 'error';
-    console.log(userFeedsError.toJS());
     const repoError = isError === USER_REPO_ERROR;
 
     const RepoListAdv = withBottomScroll(RepoList, 'search', this.getMoreRepos);
@@ -228,10 +199,7 @@ class Home extends Component {
           <div className="tab-content" id="myTabContent">
 
             <TabContent name="feeds" active>
-              {feedError && <ErrorMsg msg="Can not fetch feeds." errorMsg={errorMsg} />}
-              {showSpinner && <Spinner name="line-scale" className="loading" />}
-              <FeedList feeds={feedList} getMoreFeeds={this.getMoreFeeds} />
-              {userFeedsError.get('type') === 'over' && <OverMsg msg={userFeedsError.get('msg')} />}
+              {data && <UserFeed />}
             </TabContent>
 
             <TabContent name="search">
@@ -260,13 +228,7 @@ class Home extends Component {
 
 Home.defaultProps = {
   user: null,
-  userFeedsError: {
-    type: '',
-    msg: '',
-  },
   getInfo: () => null,
-  fetchUserFeeds: () => null,
-  getUserFeedsList: [],
   loginRequest: false,
   isAuthenticated: localStorage.getItem('auth-token') !== undefined,
 };
@@ -274,10 +236,7 @@ Home.defaultProps = {
 Home.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   user: PropTypes.object,
-  getUserFeedsList: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
-  userFeedsError: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   getInfo: PropTypes.func,
-  fetchUserFeeds: PropTypes.func,
   isAuthenticated: PropTypes.bool,
   loginRequest: PropTypes.bool,
 };
@@ -286,11 +245,8 @@ function mapState(state) {
   return {
     user: state.getIn(['github', 'user']),
     token: state.getIn(['github', 'token']),
-    userFeedsError: state.getIn(['github', 'userFeedsError']),
-    feedExhaustError: state.getIn(['github', 'feedExhaustError']),
     isAuthenticated: state.getIn(['github', 'isAuthenticated']),
     loginRequest: state.getIn(['github', 'loginRequest']),
-    getUserFeedsList: getUserFeedsList(state),
   };
 }
 
@@ -298,7 +254,6 @@ function mapState(state) {
 function mapDispatch(dispatch) {
   return bindActionCreators({
     getInfo: getUserInfo,
-    fetchUserFeeds: getUserFeeds,
   }, dispatch);
 }
 
