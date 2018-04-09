@@ -19,14 +19,7 @@ import ProfileDataList from './ProfileDataList';
 import TabContent from './Tabs/Content';
 import TabBar from '../containers/Tabs/TabBar';
 import withBottomScroll from '../hoc/withBottomScroll';
-
-// eslint-disable-next-line react/prop-types
-const ErrorMsg = ({ msg, errorMsg }) => (<div className="alert alert-danger error"><h1>Please try again.</h1> <p>{`${msg}`}</p><p>{`${errorMsg}`}</p></div>);
-
-const OverMsg = ({ msg }) => (<div className="alert alert-info"><p>{`${msg}`}</p></div>);
-OverMsg.propTypes = {
-  msg: PropTypes.string.isRequired,
-};
+import { ErrorMsg, OverMsg } from './InfoMessage';
 
 class Home extends Component {
   constructor(props) {
