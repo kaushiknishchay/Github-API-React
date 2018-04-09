@@ -9,23 +9,29 @@ const getDefaultConfig = () => ({
   },
 });
 
-export function getAuthToken(token) {
+const axiosAuthedGet = url => axios.get(url, getDefaultConfig());
+
+export function fetchAuthToken(token) {
   return axios.get(`${TOKEN_URL}/${token}`);
 }
 
-export function getUserDetails() {
-  return axios.get('/user', getDefaultConfig());
+export function fetchUserDetails() {
+  return axiosAuthedGet('/user'); // axios.get('/user', getDefaultConfig());
 }
 
 
-export function getFeeds(username) {
-  return axios.get(`/users/${username}/events`, getDefaultConfig());
+export function fetchFeeds(username, pageNum = 1) {
+  return axiosAuthedGet(`/users/${username}/events?page=${pageNum}`);
 }
 
-export function getPublicFeeds() {
-  return axios.get(`${ROOT_URL}/events`);
+export function fetchReposByName(repoName, pageNum = 1) {
+  return axiosAuthedGet(`/search/repositories?q=${repoName}&page=${pageNum}`);
 }
 
-export function getRepos(username) {
-  return axios.get(`/users/${username}/repos`, getDefaultConfig());
+export function fetchPublicFeeds(pageNum = 1) {
+  return axios.get(`${ROOT_URL}/events?page=${pageNum}`);
+}
+
+export function fetchRepos(username, pageNum = 1) {
+  return axiosAuthedGet(`/users/${username}/repos?page=${pageNum}`);
 }

@@ -1,5 +1,5 @@
 /* eslint-disable prefer-promise-reject-errors,no-unused-vars */
-export function getAuthToken(code) {
+export function fetchAuthToken(code) {
   return new Promise((resolve, reject) => {
     if (code) {
       resolve({
@@ -18,7 +18,7 @@ export function getAuthToken(code) {
 }
 
 // noinspection JSUnusedGlobalSymbols
-export function getUserDetails() {
+export function fetchUserDetails() {
   return new Promise((resolve, reject) => {
     resolve({
       data: {
@@ -29,7 +29,7 @@ export function getUserDetails() {
   });
 }
 
-export function getPublicFeeds() {
+export function fetchPublicFeeds() {
   return new Promise((resolve, reject) => {
     resolve({
       data: [{
@@ -47,10 +47,10 @@ export function getPublicFeeds() {
 }
 //
 // // noinspection JSUnusedGlobalSymbols
-// export function getRepos(username) {
+// export function fetchRepos(searchQuery) {
 //     return axios({
 //         method: "GET",
-//         url: ROOT_URL + "/users/" + username + "/repos",
+//         url: ROOT_URL + "/users/" + searchQuery + "/repos",
 //         headers: {
 //             Authorization: "token " + localStorage.getItem('auth-token')
 //         }

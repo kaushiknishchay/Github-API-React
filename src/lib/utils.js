@@ -6,3 +6,7 @@ export function sentryExtra(txt) {
     },
   };
 }
+export function isTokenSaved() {
+  const token = localStorage.getItem('auth-token');
+  return token !== undefined && token !== null && token !== '';
+}

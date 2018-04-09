@@ -8,7 +8,7 @@ import { AUTH_URL } from '../lib/constants';
 import { beginSignIn, signOut } from '../actions';
 
 
-class HeaderContainer extends React.Component {
+export class HeaderContainer extends React.Component {
   constructor(props) {
     super(props);
     this.onClick = this.onClick.bind(this);
@@ -17,19 +17,19 @@ class HeaderContainer extends React.Component {
 
 
   // eslint-disable-next-line no-unused-vars
-  shouldComponentUpdate(nextProps, nextState) {
-    return nextProps.isSignIn !== this.props.isSignIn;
-  }
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   return nextProps.isSignIn !== this.props.isSignIn;
+  // }
 
 
   onClick() {
-    const token = localStorage.getItem('github-token');
-    if (this.props.isSignIn && token !== undefined && token !== '') {
+    const token = localStorage.getItem('auth-token');
+
+    if (this.props.isSignIn && token !== undefined && token !== null) {
       try {
-        localStorage.removeItem('github-token');
         localStorage.removeItem('auth-token');
       } catch (e) {
-        console.error('Couldn\'t delete token from localStorage.');
+        // console.error('Couldn\'t delete token from localStorage.');
       }
       this.props.signOut();
     } else {
@@ -62,10 +62,11 @@ HeaderContainer.propTypes = {
 };
 
 function mapState(state) {
+  const isAuthenticated = state.getIn(['github', 'isAuthenticated']);
   const token = state.getIn(['github', 'token']);
   return {
     token,
-    isSignIn: token !== undefined && token !== null,
+    isSignIn: isAuthenticated,
   };
 }
 

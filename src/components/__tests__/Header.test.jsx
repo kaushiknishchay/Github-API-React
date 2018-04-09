@@ -1,8 +1,8 @@
-import React from 'react';
 import { shallow } from 'enzyme';
-import Header from '../../components/Header';
+import React from 'react';
+import Header from '../Header';
 
-describe('Header Container Component', () => {
+describe('<Header /> Component', () => {
   it('should show Sign In Button', () => {
     const onClick = jest.fn();
 
@@ -15,7 +15,6 @@ describe('Header Container Component', () => {
     btn.simulate('click', 'text');
 
     expect(onClick.mock.calls[0][0]).toBe('text');
-
     expect(onClick).toHaveBeenCalledTimes(1);
   });
   it('should show Sign Out Button', () => {
@@ -32,3 +31,4 @@ describe('Header Container Component', () => {
     expect(onClick.mock.calls[0][0]).toBe('text');
   });
 });
+

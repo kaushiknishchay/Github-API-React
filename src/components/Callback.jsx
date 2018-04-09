@@ -4,39 +4,29 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import { beginSignIn } from '../actions';
+import { isTokenSaved } from '../lib/utils';
 
 
 class Callback extends Component {
   static getAuthCode(url) {
     const error = url.match(/[&?]error=([^&]+)/);
-    if (error) {
-      return '';
-    }
-    return url.match(/[&?]code=([\w/-]+)/)[1];
-  }
 
-  //
-  // static getStateCode(url) {
-  //   const error = url.match(/[&?]error=([^&]+)/);
-  //   if (error) {
-  //     return '';
-  //   }
-  //   if (url.includes('state')) {
-  //     return url.match(/[&?]state=([\w/-]+)/)[1];
-  //   }
-  //   return '';
-  // }
+    return error ? '' : url.match(/[&?]code=([\w/-]+)/)[1];
+  }
 
   componentDidMount() {
-    if (this.props.location && this.props.location) {
+    if (this.props.location && this.props.location.search) {
       const authCode = Callback.getAuthCode(this.props.location.search);
-      // const stateCode = Callback.getStateCode(this.props.location.search);
-      this.props.signIn(authCode);
-    }
-  }
 
-  shouldComponentUpdate(nextProps) {
-    return (nextProps.isSignIn !== this.props.isSignIn);
+      // condition to prevent sign in request trigger
+      // if /callback?code=xxxxxxxxx url page is refreshed.
+
+      if (!this.props.isAuthenticated &&
+        (this.props.token === null || this.props.token === undefined)
+        && !isTokenSaved()) {
+        this.props.signIn(authCode);
+      }
+    }
   }
 
   render() {
@@ -47,6 +37,10 @@ class Callback extends Component {
           this.props.isLoggedIn
           && <Redirect to="/" />
         }
+        {
+          !this.props.isLoggedIn
+          && <Redirect to="/?login_failed" />
+        }
       </div>
     );
   }
@@ -54,19 +48,23 @@ class Callback extends Component {
 
 Callback.defaultProps = {
   isLoggedIn: false,
-  isSignIn: false,
+  isAuthenticated: false,
+  // isSignIn: false,
   location: {
     search: '',
   },
   signIn: code => code,
+  token: '',
 };
 
 Callback.propTypes = {
   isLoggedIn: PropTypes.bool,
-  isSignIn: PropTypes.bool,
+  isAuthenticated: PropTypes.bool,
+  // isSignIn: PropTypes.bool,
   // eslint-disable-next-line react/forbid-prop-types
   location: PropTypes.object,
   signIn: PropTypes.func,
+  token: PropTypes.string,
 };
 
 function mapDispatch(dispatch) {
@@ -77,7 +75,9 @@ function mapDispatch(dispatch) {
 
 function mapState(state) {
   return {
+    token: state.getIn(['github', 'token']),
     isLoggedIn: state.getIn(['github', 'token']) !== undefined,
+    isAuthenticated: state.getIn(['github', 'isAuthenticated']),
   };
 }
 

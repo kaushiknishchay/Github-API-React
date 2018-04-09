@@ -11,7 +11,6 @@ export const TOKEN_URL = 'http://localhost:9999/authenticate';
 
 export const USER_DETAIL_URL = 'https://api.github.com/user';
 
-export const USER_FEEDS_ERROR = 1;
 export const USER_REPO_ERROR = 2;
 export const PUBLIC_FEEDS_ERROR = 3;
 
