@@ -1,49 +1,11 @@
 /* eslint-disable react/forbid-prop-types */
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 
-class FeedList extends Component {
-  constructor(props) {
-    super(props);
-    this.isBottom = this.isBottom.bind(this);
-    this.bottomDetect = this.bottomDetect.bind(this);
-  }
-
-
-  componentDidMount() {
-    document.addEventListener('scroll', this.bottomDetect);
-  }
-
-  componentWillUnmount() {
-    document.removeEventListener('scroll', this.bottomDetect);
-  }
-
-  bottomDetect() {
-    const bodyTag = document.getElementsByTagName('body')[0];
-    let feedsTabActive = true;
-    if (document.getElementById('feeds')) {
-      feedsTabActive = document.getElementById('feeds').classList.contains('active');
-    }
-
-    if (feedsTabActive && this.isBottom(bodyTag)) {
-      // const { feeds } = this.props;
-      this.props.getMoreFeeds();
-
-      // @TODO: use this  with FeedList component and remove garbage
-    }
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  isBottom(el) {
-    return el.getBoundingClientRect().bottom <= window.innerHeight;
-  }
-
-  render() {
-    const { feeds } = this.props;
-    return (
-      <div className="list-group">
-        {feeds !== null &&
+const FeedList = ({ feeds }) => (
+  <div className="list-group">
+    {feeds !== null &&
         feeds.map((feed) => {
           let timeSince = null;
           let commitMsg = '';
@@ -103,19 +65,15 @@ class FeedList extends Component {
             </a>);
         })
         }
-      </div>
-    );
-  }
-}
+  </div>
+);
 
 FeedList.defaultProps = {
   feeds: [],
-  getMoreFeeds: () => [],
 };
 
 FeedList.propTypes = {
   feeds: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
-  getMoreFeeds: PropTypes.func,
 };
 
 export default FeedList;

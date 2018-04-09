@@ -10,37 +10,29 @@ import Spinner from 'react-spinkit';
 import { getUserFeeds, getUserInfo } from '../actions';
 import Profile from './Profile';
 import RepoList from './RepoList';
-import { fetchPublicFeeds, fetchRepos, fetchReposByName } from '../service/httpFetch';
+import { fetchRepos, fetchReposByName } from '../service/httpFetch';
 import FeedList from './FeedsList';
 import SearchInput from './SearchInput';
-import { PUBLIC_FEEDS_ERROR, USER_REPO_ERROR } from '../lib/constants';
+import { USER_REPO_ERROR } from '../lib/constants';
 import getUserFeedsList from '../lib/userFeedSelector';
 import ProfileDataList from './ProfileDataList';
 import TabContent from './Tabs/Content';
 import TabBar from '../containers/Tabs/TabBar';
 import withBottomScroll from '../hoc/withBottomScroll';
 import { ErrorMsg, OverMsg } from './InfoMessage';
+import PublicFeed from '../containers/PublicFeed';
 
 class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {
       repoList: [],
-      feedList: [],
       isError: 0,
       errorMsg: '',
-      publicFeedError: {
-        type: '',
-        msg: '',
-        code: PUBLIC_FEEDS_ERROR,
-      },
       userFeedPageNum: 2,
-      publicFeedPageNum: 2,
       repoSearchPageNum: 2,
     };
-    this.homeRef = null;
     this.getUserRepos = this.getUserRepos.bind(this);
-    this.getPublicFeed = this.getPublicFeed.bind(this);
     this.getMoreFeeds = this.getMoreFeeds.bind(this);
     this.getMoreRepos = this.getMoreRepos.bind(this);
     this.onSearchSubmit = this.onSearchSubmit.bind(this);
@@ -51,11 +43,6 @@ class Home extends Component {
     // if user logged in, show his feed
     if (this.props.isAuthenticated && !this.props.user) {
       this.props.getInfo();
-    }
-
-    // if user not logged in, show public feed
-    if (!this.props.isAuthenticated && this.props.loginRequest === false) {
-      this.getPublicFeed();
     }
   }
 
@@ -71,23 +58,7 @@ class Home extends Component {
       // if feed list empty and if there was an error in fetching last time then dont fetch
       this.props.fetchUserFeeds(nextProps.user.login);
     }
-
-    // user has signed out, fetched public feeds
-    if (!nextProps.isAuthenticated
-      && nextState.feedList !== null
-      && (
-        !nextState.feedList.length > 0
-        && nextState.publicFeedError.code !== PUBLIC_FEEDS_ERROR
-      )) {
-      // if no error came in fetching public feeds then fetch them else stop
-      this.getPublicFeed();
-    }
   }
-
-  componentWillUnmount() {
-    this.homeRef = null;
-  }
-
 
   onSearchSubmit(t, q) {
     if (t === 'repo') {
@@ -169,7 +140,7 @@ class Home extends Component {
 
   getMoreFeeds() {
     const { isAuthenticated, user, userFeedsError } = this.props;
-    const { userFeedPageNum, publicFeedError, publicFeedPageNum } = this.state;
+    const { userFeedPageNum } = this.state;
 
     if (isAuthenticated && user && userFeedsError.get('type') !== 'over') {
       // if logged in fetch user feeds
@@ -177,53 +148,8 @@ class Home extends Component {
       this.setState((state, props) => ({
         userFeedPageNum: state.userFeedPageNum + 1,
       }));
-    } else if (!isAuthenticated && publicFeedError.type !== 'over') {
-      this.getPublicFeed(publicFeedPageNum);
     }
   }
-
-  getPublicFeed(pageNum = 1) {
-    if (this.homeRef) {
-      fetchPublicFeeds(pageNum).then((res) => {
-        if (pageNum <= 1) {
-          // if it's first page simply add data to state
-          this.setState((state, props) => ({
-            feedList: res.data,
-            repoList: [],
-            publicFeedPageNum: 2,
-          }));
-        } else if (pageNum > 1) {
-          // if it's > 1 page, concat the data
-          if (res.data.length > 0) {
-            // if we have more repos to add, then concat
-            this.setState((state, props) => ({
-              feedList: state.feedList.concat(res.data),
-              repoList: [],
-              publicFeedPageNum: state.publicFeedPageNum + 1,
-            }));
-          } else {
-            // no more repo results present, give info message that result over
-            this.setState({
-              publicFeedError: {
-                type: 'over',
-                code: PUBLIC_FEEDS_ERROR,
-                msg: 'No more results to show.',
-              },
-            });
-          }
-        }
-      }).catch((err) => {
-        this.setState({
-          publicFeedError: {
-            type: 'error',
-            code: PUBLIC_FEEDS_ERROR,
-            msg: `${err.toString().includes('403')}` ? 'API Limit Exceeded' : '',
-          },
-        });
-      });
-    }
-  }
-
 
   getMoreRepos() {
     if (this.searchType && this.searchQuery && this.searchQuery.length >= 3) {
@@ -262,25 +188,37 @@ class Home extends Component {
 
 
   render() {
+    // USER not SIGNED IN
+    if (!this.props.isAuthenticated && this.props.loginRequest === false) {
+      return (
+        <div className="row">
+          <div className="col-lg-12">
+            <br />
+            <PublicFeed />
+            <br />
+          </div>
+        </div>);
+    }
+
     const {
       user: data, userFeedsError, isAuthenticated,
       getUserFeedsList: userFeeds,
     } = this.props;
 
     const {
-      repoList, isError, feedList: publicFeedList, errorMsg, searchQuery, publicFeedError,
+      repoList, isError, errorMsg, searchQuery,
     } = this.state;
 
-    const feedList = isAuthenticated ? userFeeds : publicFeedList;
+    const feedList = isAuthenticated ? userFeeds : [];
     const showSpinner = isError === 0 && (feedList === null || feedList.length === 0);
-    const feedError = publicFeedError.type === 'error' || userFeedsError.get('type') === 'error';
+    const feedError = userFeedsError.get('type') === 'error';
     console.log(userFeedsError.toJS());
     const repoError = isError === USER_REPO_ERROR;
 
     const RepoListAdv = withBottomScroll(RepoList, 'search', this.getMoreRepos);
 
     return (
-      <div className="row" ref={(re) => { this.homeRef = re; }}>
+      <div className="row">
         <div className="col-lg-12">
 
           <Profile data={data} />
@@ -294,7 +232,6 @@ class Home extends Component {
               {showSpinner && <Spinner name="line-scale" className="loading" />}
               <FeedList feeds={feedList} getMoreFeeds={this.getMoreFeeds} />
               {userFeedsError.get('type') === 'over' && <OverMsg msg={userFeedsError.get('msg')} />}
-              {publicFeedError.type === 'over' && <OverMsg msg={publicFeedError.msg} />}
             </TabContent>
 
             <TabContent name="search">
@@ -322,7 +259,6 @@ class Home extends Component {
 }
 
 Home.defaultProps = {
-  // token: null,
   user: null,
   userFeedsError: {
     type: '',
@@ -336,7 +272,6 @@ Home.defaultProps = {
 };
 
 Home.propTypes = {
-  // token: PropTypes.string,
   // eslint-disable-next-line react/forbid-prop-types
   user: PropTypes.object,
   getUserFeedsList: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
