@@ -32,10 +32,6 @@ describe('<FeedList/>', () => {
   it('should render nothing', () => {
     const wrapper = shallow(<FeedList />);
     expect(wrapper.find('.list-group-item').length).toEqual(0);
-
-    wrapper.instance().bottomDetect();
-
-    expect(wrapper.instance().props.getMoreFeeds()).toEqual([]);
   });
 
   it('should render feedList with 2 items', () => {

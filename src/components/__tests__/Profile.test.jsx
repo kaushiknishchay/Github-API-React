@@ -12,4 +12,9 @@ describe('Profile Component', () => {
     const wrapper = shallow(<Profile data={profileData} />);
     expect(wrapper.find('.mt-0').contains(profileData.login)).toBe(true);
   });
+
+  it('should Render nothing', () => {
+    const wrapper = shallow(<Profile />);
+    expect(wrapper.text()).toBe('');
+  });
 });
