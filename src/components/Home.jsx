@@ -29,6 +29,11 @@ class Home extends Component {
       feedList: [],
       isError: 0,
       errorMsg: '',
+      publicFeedError: {
+        type: '',
+        msg: '',
+        code: PUBLIC_FEEDS_ERROR,
+      },
       userFeedPageNum: 2,
       publicFeedPageNum: 2,
       repoSearchPageNum: 2,
@@ -62,7 +67,7 @@ class Home extends Component {
 
     // user is logged in, user data is fetched, so fetch user feeds list
     if (nextProps.isAuthenticated && nextProps.user &&
-      (nextProps.userFeedsError === null && nextProps.getUserFeedsList === null)) {
+      (nextProps.userFeedsError.get('type') === '' && nextProps.getUserFeedsList === null)) {
       // if feed list empty and if there was an error in fetching last time then dont fetch
       this.props.fetchUserFeeds(nextProps.user.login);
     }
@@ -70,9 +75,11 @@ class Home extends Component {
     // user has signed out, fetched public feeds
     if (!nextProps.isAuthenticated
       && nextState.feedList !== null
-      && (!nextState.feedList.length > 0 && nextState.isError !== PUBLIC_FEEDS_ERROR)) {
+      && (
+        !nextState.feedList.length > 0
+        && nextState.publicFeedError.code !== PUBLIC_FEEDS_ERROR
+      )) {
       // if no error came in fetching public feeds then fetch them else stop
-
       this.getPublicFeed();
     }
   }
@@ -161,41 +168,57 @@ class Home extends Component {
   }
 
   getMoreFeeds() {
-    const { isAuthenticated, user } = this.props;
-    const { userFeedPageNum, isError, publicFeedPageNum } = this.state;
+    const { isAuthenticated, user, userFeedsError } = this.props;
+    const { userFeedPageNum, publicFeedError, publicFeedPageNum } = this.state;
 
-    if (isAuthenticated) { // if logged in fetch user feeds
+    if (isAuthenticated && user && userFeedsError.get('type') !== 'over') {
+      // if logged in fetch user feeds
       this.props.fetchUserFeeds(user.login, userFeedPageNum);
       this.setState((state, props) => ({
         userFeedPageNum: state.userFeedPageNum + 1,
       }));
-    }
-    if (isError !== PUBLIC_FEEDS_ERROR) {
+    } else if (!isAuthenticated && publicFeedError.type !== 'over') {
       this.getPublicFeed(publicFeedPageNum);
-      this.setState((state, props) => ({
-        publicFeedPageNum: state.publicFeedPageNum + 1,
-      }));
     }
   }
 
-  getPublicFeed(pageNum) {
+  getPublicFeed(pageNum = 1) {
     if (this.homeRef) {
       fetchPublicFeeds(pageNum).then((res) => {
         if (pageNum <= 1) {
-          this.setState({
+          // if it's first page simply add data to state
+          this.setState((state, props) => ({
             feedList: res.data,
             repoList: [],
-          });
-        } else {
-          this.setState((state, props) => ({
-            feedList: state.feedList.concat(res.data),
-            repoList: [],
+            publicFeedPageNum: 2,
           }));
+        } else if (pageNum > 1) {
+          // if it's > 1 page, concat the data
+          if (res.data.length > 0) {
+            // if we have more repos to add, then concat
+            this.setState((state, props) => ({
+              feedList: state.feedList.concat(res.data),
+              repoList: [],
+              publicFeedPageNum: state.publicFeedPageNum + 1,
+            }));
+          } else {
+            // no more repo results present, give info message that result over
+            this.setState({
+              publicFeedError: {
+                type: 'over',
+                code: PUBLIC_FEEDS_ERROR,
+                msg: 'No more results to show.',
+              },
+            });
+          }
         }
       }).catch((err) => {
         this.setState({
-          isError: PUBLIC_FEEDS_ERROR,
-          errorMsg: `${err.toString().includes('403')}` ? 'API Limit Exceeded' : '',
+          publicFeedError: {
+            type: 'error',
+            code: PUBLIC_FEEDS_ERROR,
+            msg: `${err.toString().includes('403')}` ? 'API Limit Exceeded' : '',
+          },
         });
       });
     }
@@ -241,16 +264,17 @@ class Home extends Component {
   render() {
     const {
       user: data, userFeedsError, isAuthenticated,
-      getUserFeedsList: userFeeds, feedExhaustError,
+      getUserFeedsList: userFeeds,
     } = this.props;
 
     const {
-      repoList, isError, feedList: publicFeedList, errorMsg, searchQuery,
+      repoList, isError, feedList: publicFeedList, errorMsg, searchQuery, publicFeedError,
     } = this.state;
 
     const feedList = isAuthenticated ? userFeeds : publicFeedList;
     const showSpinner = isError === 0 && (feedList === null || feedList.length === 0);
-    const feedError = isError === PUBLIC_FEEDS_ERROR || userFeedsError !== null;
+    const feedError = publicFeedError.type === 'error' || userFeedsError.get('type') === 'error';
+    console.log(userFeedsError.toJS());
     const repoError = isError === USER_REPO_ERROR;
 
     const RepoListAdv = withBottomScroll(RepoList, 'search', this.getMoreRepos);
@@ -269,7 +293,8 @@ class Home extends Component {
               {feedError && <ErrorMsg msg="Can not fetch feeds." errorMsg={errorMsg} />}
               {showSpinner && <Spinner name="line-scale" className="loading" />}
               <FeedList feeds={feedList} getMoreFeeds={this.getMoreFeeds} />
-              {feedExhaustError && <OverMsg msg={feedExhaustError} />}
+              {userFeedsError.get('type') === 'over' && <OverMsg msg={userFeedsError.get('msg')} />}
+              {publicFeedError.type === 'over' && <OverMsg msg={publicFeedError.msg} />}
             </TabContent>
 
             <TabContent name="search">
@@ -299,13 +324,15 @@ class Home extends Component {
 Home.defaultProps = {
   // token: null,
   user: null,
-  userFeedsError: null,
+  userFeedsError: {
+    type: '',
+    msg: '',
+  },
   getInfo: () => null,
   fetchUserFeeds: () => null,
   getUserFeedsList: [],
   loginRequest: false,
   isAuthenticated: localStorage.getItem('auth-token') !== undefined,
-  feedExhaustError: null,
 };
 
 Home.propTypes = {
@@ -318,7 +345,6 @@ Home.propTypes = {
   fetchUserFeeds: PropTypes.func,
   isAuthenticated: PropTypes.bool,
   loginRequest: PropTypes.bool,
-  feedExhaustError: PropTypes.string,
 };
 
 function mapState(state) {

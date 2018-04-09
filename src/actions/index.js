@@ -107,14 +107,15 @@ export function getUserFeeds(login, pageNum = 1) {
         if (res.data.length > 0) {
           const normalFeed = normalize(res.data, userFeedsSchema);
           dispatch(updateFeed(normalFeed));
-        }else{
+        } else {
           dispatch(feedExhaust());
         }
       } else {
         dispatch(success(res.data, normalize(res.data, userFeedsSchema)));
       }
+      // eslint-disable-next-line no-unused-vars
     }).catch((err) => {
-      dispatch(error(err));
+      dispatch(error('Can\'t fetch user feeds.'));
       // Raven.captureException(err, sentryExtra('Error while fetching user feeds'));
     });
   };
