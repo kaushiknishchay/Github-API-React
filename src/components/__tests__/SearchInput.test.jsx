@@ -4,6 +4,30 @@ import { shallow } from 'enzyme';
 import SearchInput from '../SearchInput';
 
 describe('<SearchInput/>', () => {
+  let event;
+  let event2;
+  let clickEvent;
+
+  beforeAll(() => {
+    event = {
+      target: {
+        name: 'query',
+        value: 'airbnb',
+      },
+    };
+
+    event2 = {
+      target: {
+        name: 'type',
+        value: 'repo',
+      },
+    };
+
+    clickEvent = {
+      preventDefault: jest.fn(),
+    };
+  });
+
   it('should render', () => {
     const onClick = jest.fn();
     const onChange = jest.fn();
@@ -31,32 +55,25 @@ describe('<SearchInput/>', () => {
     expect(eQuery.length).toEqual(1);
     expect(eSubmitButton.length).toEqual(1);
 
-    const event = {
-      target: {
-        name: 'query',
-        value: 'airbnb',
-      },
-    };
-
-    const event2 = {
-      target: {
-        name: 'type',
-        value: 'repo',
-      },
-    };
-
+    // simulate query text enter
     eQuery.simulate('change', event);
 
+    // simulate query type selection
     eSelect.simulate('change', event2);
 
+    // check if onChange method triggered
     expect(spyOnChangefn).toHaveBeenCalled();
 
-    eSubmitButton.simulate('click', {
-      preventDefault: jest.fn(),
-    });
+    // simulate button click
+    eSubmitButton.simulate('click', clickEvent);
+
+    // check if preventDefault called
+    expect(clickEvent.preventDefault).toHaveBeenCalled();
 
     expect(spyhandleSubmitfn).toHaveBeenCalled();
+
     expect(mockOnChangefn).toHaveBeenCalledWith(event);
+
     expect(mockOnChangefn).toHaveBeenCalledWith(event2);
   });
 });

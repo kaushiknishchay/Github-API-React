@@ -20,7 +20,7 @@ import { ErrorMsg, OverMsg } from './InfoMessage';
 import PublicFeed from '../containers/PublicFeed';
 import UserFeed from '../containers/UserFeed';
 
-class Home extends Component {
+export class HomeComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -174,7 +174,8 @@ class Home extends Component {
   getMoreRepos() {
     const { repoFetchError, repoSearchPageNum, userRepoFetchError } = this.state;
 
-    if (this.searchType && this.searchQuery && this.searchQuery.length >= 3) {
+    if (this.props.isAuthenticated &&
+      this.searchType && this.searchQuery && this.searchQuery.length >= 3) {
       if (this.searchType === 'repo' && (repoFetchError.type === '')) {
         this.getReposByName(this.searchQuery, repoSearchPageNum);
       }
@@ -281,14 +282,14 @@ class Home extends Component {
   }
 }
 
-Home.defaultProps = {
+HomeComponent.defaultProps = {
   user: null,
   getInfo: () => null,
   loginRequest: false,
   isAuthenticated: localStorage.getItem('auth-token') !== undefined,
 };
 
-Home.propTypes = {
+HomeComponent.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   user: PropTypes.object,
   getInfo: PropTypes.func,
@@ -312,4 +313,4 @@ function mapDispatch(dispatch) {
   }, dispatch);
 }
 
-export default connect(mapState, mapDispatch)(Home);
+export default connect(mapState, mapDispatch)(HomeComponent);

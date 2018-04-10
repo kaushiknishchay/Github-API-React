@@ -34,16 +34,6 @@ class SearchInput extends React.Component {
           this.props.onClick(this.state.type, this.state.query);
         }
       });
-
-
-    // const t = Observable.fromEvent(document.getElementsByName('query')[0], 'keyup');
-    //
-    // t.subscribe({
-    //   next: x => console.log(x),
-    //   err: e => console.log(e),
-    //   comp: c => console.log(c),
-    // });
-    // console.log(t, document.getElementsByName('query')[0]);
   }
 
 

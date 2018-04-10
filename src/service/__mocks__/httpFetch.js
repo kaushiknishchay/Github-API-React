@@ -45,6 +45,18 @@ export function fetchPublicFeeds() {
     });
   });
 }
+
+export function fetchReposByName(name, page) {
+  return new Promise((resolve, reject) => {
+    resolve({
+      data: {
+        items: [{
+          id: Math.random(),
+        }],
+      },
+    });
+  });
+}
 //
 // // noinspection JSUnusedGlobalSymbols
 // export function fetchRepos(searchQuery) {
