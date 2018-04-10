@@ -6,21 +6,27 @@ import { fromJS } from 'immutable';
 import { UserFeedC } from '../UserFeed';
 
 describe('<UserFeed />', () => {
-  it('should render', () => {
-    const feedList = [{
+  let feedList;
+  let user;
+  let userFeedsError;
+
+  beforeAll(() => {
+    feedList = [{
       id: 123,
       type: 'Pull =Event',
     }];
 
-    const user = {
+    user = {
       login: 'username',
     };
 
-    const userFeedsError = fromJS({
+    userFeedsError = fromJS({
       type: '',
       msg: '',
     });
+  });
 
+  it('should render', () => {
     const mockFetchUserFeedsfn = jest.fn();
 
     const wrapper = mount(<UserFeedC
@@ -31,10 +37,18 @@ describe('<UserFeed />', () => {
       fetchUserFeeds={mockFetchUserFeedsfn}
     />);
 
+    // check if defaultProps returning null as expected
+    expect(UserFeedC.defaultProps.fetchUserFeeds()).toEqual(null);
+
     const listContainer = wrapper.find('.list-group');
 
     expect(listContainer.find('a').length).toEqual(1);
 
     expect(mockFetchUserFeedsfn).toHaveBeenCalledWith('username');
+
+    // trigger more feeds function
+    wrapper.instance().getMoreFeeds();
+
+    expect(mockFetchUserFeedsfn).toHaveBeenCalledWith('username', 2);
   });
 });
