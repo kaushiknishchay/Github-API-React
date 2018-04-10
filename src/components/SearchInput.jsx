@@ -28,8 +28,22 @@ class SearchInput extends React.Component {
       .debounceTime(500 /* ms */)
       .subscribe(({ target, value }) => {
         this.setState({ [target]: value });
-        if (this.state.type) { this.props.onClick(this.state.type, this.state.query); }
+        if (this.state.type
+          && this.state.query
+          && this.state.query.length >= 3) {
+          this.props.onClick(this.state.type, this.state.query);
+        }
       });
+
+
+    // const t = Observable.fromEvent(document.getElementsByName('query')[0], 'keyup');
+    //
+    // t.subscribe({
+    //   next: x => console.log(x),
+    //   err: e => console.log(e),
+    //   comp: c => console.log(c),
+    // });
+    // console.log(t, document.getElementsByName('query')[0]);
   }
 
 
