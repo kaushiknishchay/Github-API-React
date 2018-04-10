@@ -93,22 +93,20 @@ class Home extends Component {
 
   getUserRepos(searchQuery, pageNum = 1) {
     fetchRepos(searchQuery, pageNum).then((res) => {
-      if (res.data.length > 0) {
-        if (pageNum > 1) {
-          this.setState((s, p) => ({
-            repoList: s.repoList.concat(res.data),
-            isError: 0,
-            errorMsg: '',
-            repoSearchPageNum: s.repoSearchPageNum + 1,
-          }));
-        } else {
-          this.setState({
-            repoList: res.data,
-            isError: 0,
-            errorMsg: '',
-            repoSearchPageNum: 2,
-          });
-        }
+      if (pageNum > 1) {
+        this.setState((s, p) => ({
+          repoList: s.repoList.concat(res.data),
+          isError: 0,
+          errorMsg: '',
+          repoSearchPageNum: s.repoSearchPageNum + 1,
+        }));
+      } else if (res.data.length > 0) {
+        this.setState({
+          repoList: res.data,
+          isError: 0,
+          errorMsg: '',
+          repoSearchPageNum: 2,
+        });
       } else {
         this.setState({
           repoList: [],
@@ -129,10 +127,10 @@ class Home extends Component {
 
   getMoreRepos() {
     if (this.searchType && this.searchQuery && this.searchQuery.length >= 3) {
-      if (this.searchType === 'repo') {
+      if (this.searchType === 'repo' && this.state.isError !== USER_REPO_ERROR) {
         this.getReposByName(this.searchQuery, this.state.repoSearchPageNum);
       }
-      if (this.searchType === 'user') {
+      if (this.searchType === 'user' && this.state.isError !== USER_REPO_ERROR) {
         this.getUserRepos(this.searchQuery, this.state.repoSearchPageNum);
       }
     }

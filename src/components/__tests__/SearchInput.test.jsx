@@ -16,13 +16,13 @@ describe('<SearchInput/>', () => {
   });
 
   it('should detect Input Changes', async () => {
-    const onClick = jest.fn();
-    const onChange = jest.fn();
+    const mockOnClickfn = jest.fn();
+    const mockOnChangefn = jest.fn();
 
     const spyOnChangefn = jest.spyOn(SearchInput.prototype, 'onChange');
     const spyhandleSubmitfn = jest.spyOn(SearchInput.prototype, 'handleSubmit');
 
-    const wrapper = shallow(<SearchInput onClick={onClick} onChange={onChange} />);
+    const wrapper = shallow(<SearchInput onClick={mockOnClickfn} onChange={mockOnChangefn} />);
 
     const eQuery = wrapper.find('[name="query"]');
     const eSelect = wrapper.find('[name="type"]');
@@ -38,13 +38,16 @@ describe('<SearchInput/>', () => {
       },
     };
 
-    eQuery.simulate('change', event);
-    eSelect.simulate('change', {
+    const event2 = {
       target: {
         name: 'type',
         value: 'repo',
       },
-    });
+    };
+
+    eQuery.simulate('change', event);
+
+    eSelect.simulate('change', event2);
 
     expect(spyOnChangefn).toHaveBeenCalled();
 
@@ -53,7 +56,7 @@ describe('<SearchInput/>', () => {
     });
 
     expect(spyhandleSubmitfn).toHaveBeenCalled();
-
-    expect(onClick).toHaveBeenCalledWith('repo', 'airbnb');
+    expect(mockOnChangefn).toHaveBeenCalledWith(event);
+    expect(mockOnChangefn).toHaveBeenCalledWith(event2);
   });
 });
