@@ -16,7 +16,7 @@ import ProfileDataList from './ProfileDataList';
 import TabContent from './Tabs/Content';
 import TabBar from '../containers/Tabs/TabBar';
 import withBottomScroll from '../hoc/withBottomScroll';
-import { ErrorMsg } from './InfoMessage';
+import { ErrorMsg, OverMsg } from './InfoMessage';
 import PublicFeed from '../containers/PublicFeed';
 import UserFeed from '../containers/UserFeed';
 
@@ -25,8 +25,14 @@ class Home extends Component {
     super(props);
     this.state = {
       repoList: [],
-      isError: 0,
-      errorMsg: '',
+      repoFetchError: {
+        type: '',
+        msg: '',
+      },
+      userRepoFetchError: {
+        type: '',
+        msg: '',
+      },
       repoSearchPageNum: 2,
     };
     this.getUserRepos = this.getUserRepos.bind(this);
@@ -68,25 +74,48 @@ class Home extends Component {
   getReposByName(searchQuery, pageNum = 1) {
     fetchReposByName(searchQuery, pageNum).then((res) => {
       if (pageNum > 1) {
-        this.setState((state, props) => ({
-          repoList: state.repoList.concat(res.data.items),
-          isError: 0,
-          errorMsg: '',
-          repoSearchPageNum: state.repoSearchPageNum + 1,
-        }));
+        if (res.data.items.length > 0) {
+          this.setState((state, props) => ({
+            repoList: state.repoList.concat(res.data.items),
+            repoFetchError: {
+              type: '',
+              msg: '',
+            },
+            repoSearchPageNum: state.repoSearchPageNum + 1,
+          }));
+        } else {
+          this.setState({
+            repoFetchError: {
+              type: 'over',
+              msg: 'No more repos to show.',
+            },
+          });
+        }
+      } else if (res.data.items.length === 0) {
+        this.setState({
+          repoFetchError: {
+            type: 'no-result',
+            msg: 'No repos found by that name.',
+          },
+        });
       } else {
         this.setState({
           repoList: res.data.items,
-          isError: 0,
-          errorMsg: '',
+          repoFetchError: {
+            type: '',
+            msg: '',
+          },
+          repoSearchPageNum: 2,
         });
       }
     }).catch((e) => {
       this.setState({
         repoList: [],
-        isError: USER_REPO_ERROR,
         repoSearchPageNum: 2,
-        errorMsg: 'Cant fetch repo list.',
+        repoFetchError: {
+          type: 'error',
+          msg: `Error: ${e}`,
+        },
       });
     });
   }
@@ -94,44 +123,63 @@ class Home extends Component {
   getUserRepos(searchQuery, pageNum = 1) {
     fetchRepos(searchQuery, pageNum).then((res) => {
       if (pageNum > 1) {
-        this.setState((s, p) => ({
-          repoList: s.repoList.concat(res.data),
-          isError: 0,
-          errorMsg: '',
-          repoSearchPageNum: s.repoSearchPageNum + 1,
-        }));
+        if (res.data.length > 0) {
+          this.setState((s, p) => ({
+            repoList: s.repoList.concat(res.data),
+            userRepoFetchError: {
+              type: '',
+              msg: '',
+            },
+            repoSearchPageNum: s.repoSearchPageNum + 1,
+          }));
+        } else {
+          this.setState({
+            userRepoFetchError: {
+              type: 'over',
+              msg: 'No more repos to show.',
+            },
+          });
+        }
       } else if (res.data.length > 0) {
         this.setState({
           repoList: res.data,
-          isError: 0,
-          errorMsg: '',
+          userRepoFetchError: {
+            type: '',
+            msg: '',
+          },
           repoSearchPageNum: 2,
         });
       } else {
         this.setState({
           repoList: [],
-          isError: USER_REPO_ERROR,
-          errorMsg: `No Repos found for "${searchQuery}"`,
+          userRepoFetchError: {
+            type: 'no-result',
+            msg: `No Repos found for user "${searchQuery}"`,
+          },
         });
       }
     }).catch((err) => {
       // Raven.captureException(err, sentryExtra('Error during fetching user repos'));
       this.setState({
-        isError: USER_REPO_ERROR,
-        errorMsg: err,
+        userRepoFetchError: {
+          type: 'error',
+          msg: `${err.toString().includes('404')}` ? 'Invalid username.' : err,
+        },
         repoSearchPageNum: 2,
-        repoList: null,
+        repoList: [],
       });
     });
   }
 
   getMoreRepos() {
+    const { repoFetchError, repoSearchPageNum, userRepoFetchError } = this.state;
+
     if (this.searchType && this.searchQuery && this.searchQuery.length >= 3) {
-      if (this.searchType === 'repo' && this.state.isError !== USER_REPO_ERROR) {
-        this.getReposByName(this.searchQuery, this.state.repoSearchPageNum);
+      if (this.searchType === 'repo' && (repoFetchError.type === '')) {
+        this.getReposByName(this.searchQuery, repoSearchPageNum);
       }
-      if (this.searchType === 'user' && this.state.isError !== USER_REPO_ERROR) {
-        this.getUserRepos(this.searchQuery, this.state.repoSearchPageNum);
+      if (this.searchType === 'user' && userRepoFetchError.type === '') {
+        this.getUserRepos(this.searchQuery, repoSearchPageNum);
       }
     }
   }
@@ -179,10 +227,13 @@ class Home extends Component {
     } = this.props;
 
     const {
-      repoList, isError, errorMsg, searchQuery,
+      repoList, searchQuery, repoFetchError, userRepoFetchError,
     } = this.state;
 
-    const repoError = isError === USER_REPO_ERROR;
+    const repoError = userRepoFetchError.type === 'error' || userRepoFetchError.type === 'no-result';
+    const errorMsg = userRepoFetchError.msg;
+    const isFeedsOver = userRepoFetchError.type === 'over' || repoFetchError.type === 'over';
+    const isFeedsOverMsg = userRepoFetchError.msg || repoFetchError.msg;
 
     const RepoListAdv = withBottomScroll(RepoList, 'search', this.getMoreRepos);
 
@@ -209,8 +260,14 @@ class Home extends Component {
                    username={searchQuery}
                  />
               }
-              {repoError && <ErrorMsg msg="Cant fetch repository list." errorMsg={errorMsg} />}
+              {repoError && <ErrorMsg msg={errorMsg} errorMsg="" />}
+              {
+                (repoFetchError.type === 'error' || repoFetchError.type === 'no-result')
+                && <ErrorMsg msg={repoFetchError.msg} errorMsg="" />
+              }
               <RepoListAdv data={repoList} />
+              {isFeedsOver && <OverMsg msg={isFeedsOverMsg} />}
+
             </TabContent>
 
             <TabContent name="profile">
