@@ -6,6 +6,10 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
+# Install Dependencies
+
+Run `yarn install` or `npm install` in the project folder to install all dependencies
+
 
 # Note
 
