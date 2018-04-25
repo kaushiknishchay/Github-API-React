@@ -11,6 +11,15 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 Run `yarn install` or `npm install` in the project folder to install all dependencies
 
 
+# Run
+
+`yarn start` to start the server
+
+and go to the the folder containing the `gatekeeper` repo code and start the server.
+
+By Default server starts at http://localhost:9999 , if changed also change in the `src/lib/constant.js` file.
+
+
 # Note
 
 This project depends on (https://github.com/prose/gatekeeper/) repository.
