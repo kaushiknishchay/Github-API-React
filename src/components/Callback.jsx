@@ -7,7 +7,7 @@ import { beginSignIn } from '../actions';
 import { isTokenSaved } from '../lib/utils';
 
 
-class Callback extends Component {
+export class CallbackC extends Component {
   static getAuthCode(url) {
     const error = url.match(/[&?]error=([^&]+)/);
 
@@ -16,7 +16,7 @@ class Callback extends Component {
 
   componentDidMount() {
     if (this.props.location && this.props.location.search) {
-      const authCode = Callback.getAuthCode(this.props.location.search);
+      const authCode = CallbackC.getAuthCode(this.props.location.search);
 
       // condition to prevent sign in request trigger
       // if /callback?code=xxxxxxxxx url page is refreshed.
@@ -46,7 +46,7 @@ class Callback extends Component {
   }
 }
 
-Callback.defaultProps = {
+CallbackC.defaultProps = {
   isLoggedIn: false,
   isAuthenticated: false,
   // isSignIn: false,
@@ -57,7 +57,7 @@ Callback.defaultProps = {
   token: '',
 };
 
-Callback.propTypes = {
+CallbackC.propTypes = {
   isLoggedIn: PropTypes.bool,
   isAuthenticated: PropTypes.bool,
   // isSignIn: PropTypes.bool,
@@ -81,4 +81,4 @@ function mapState(state) {
   };
 }
 
-export default withRouter(connect(mapState, mapDispatch)(Callback));
+export default withRouter(connect(mapState, mapDispatch)(CallbackC));

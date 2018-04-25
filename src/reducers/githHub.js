@@ -16,8 +16,10 @@ export const initialState = fromJS({
   token: localStorage.getItem('auth-token'),
   user: null,
   isAuthenticated: isTokenSaved(),
-  userFeedsError: null,
-  feedExhaustError: null,
+  userFeedsError: {
+    type: '',
+    msg: '',
+  },
   normalizedFeed: null,
 });
 
@@ -40,29 +42,38 @@ export default function gitHub(state = initialState, action) {
         user: null,
         isAuthenticated: false,
         normalizedFeed: null,
-        feedExhaustError: null,
       });
     case USER_DATA:
       return state.set('user', action.user);
     case USER_FEEDS_ERROR:
       return state.merge({
-        userFeedsError: action.error,
+        userFeedsError: {
+          type: 'error',
+          msg: action.error,
+        },
         normalizedFeed: null,
-        feedExhaustError: null,
       });
     case USER_FEEDS:
       return state.merge({
-        userFeedsError: null,
+        userFeedsError: {
+          type: '',
+          msg: '',
+        },
         normalizedFeed: action.normalizedFeed,
-        feedExhaustError: null,
       });
     case USER_FEEDS_UPDATE:
       return state.updateIn(
         ['normalizedFeed', 'result'],
         arr => arr.concat(action.normalizedFeed.result),
-      ).mergeDeepIn(['normalizedFeed', 'entities'], fromJS(action.normalizedFeed.entities)).set('feedExhaustError', null);
+      ).mergeDeepIn(['normalizedFeed', 'entities'], fromJS(action.normalizedFeed.entities))
+        .merge({
+          userFeedsError: {
+            type: '',
+            msg: '',
+          },
+        });
     case USER_FEEDS_UPDATE_OVER:
-      return state.set('feedExhaustError', action.error);
+      return state.merge({ userFeedsError: { type: 'over', msg: action.error } });
     default:
       return state;
   }

@@ -3,7 +3,13 @@ import { shallow } from 'enzyme';
 import ProfileDataList from '../ProfileDataList';
 
 describe('<ProfileDataList/>', () => {
-  it('should render', () => {
+  it('should Render nothing', () => {
+    const wrapper = shallow(<ProfileDataList data={null} />);
+
+    expect(wrapper.text()).toEqual('');
+  });
+
+  it('should render Profile Data List', () => {
     const profileData = {
       name: 'John Doe',
       followers: 10,

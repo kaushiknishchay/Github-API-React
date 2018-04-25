@@ -49,6 +49,9 @@ describe('Header Container Component', () => {
     // manually click the button
     wrapper.instance().onClick();
 
+    // check default SignOut function
+    expect(HeaderContainer.defaultProps.signOut()).toEqual(null);
+
     // method called as user not signed in
     expect(goToAuthURL).toHaveBeenCalled();
 

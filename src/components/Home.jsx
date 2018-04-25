@@ -4,46 +4,38 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
-import Spinner from 'react-spinkit';
 
 
-import { getUserFeeds, getUserInfo } from '../actions';
+import { getUserInfo } from '../actions';
 import Profile from './Profile';
 import RepoList from './RepoList';
-import { fetchPublicFeeds, fetchRepos, fetchReposByName } from '../service/httpFetch';
-import FeedList from './FeedsList';
+import { fetchRepos, fetchReposByName } from '../service/httpFetch';
 import SearchInput from './SearchInput';
-import { PUBLIC_FEEDS_ERROR, USER_REPO_ERROR } from '../lib/constants';
-import getUserFeedsList from '../lib/userFeedSelector';
+import { USER_REPO_ERROR } from '../lib/constants';
 import ProfileDataList from './ProfileDataList';
 import TabContent from './Tabs/Content';
 import TabBar from '../containers/Tabs/TabBar';
 import withBottomScroll from '../hoc/withBottomScroll';
+import { ErrorMsg, OverMsg } from './InfoMessage';
+import PublicFeed from '../containers/PublicFeed';
+import UserFeed from '../containers/UserFeed';
 
-// eslint-disable-next-line react/prop-types
-const ErrorMsg = ({ msg, errorMsg }) => (<div className="alert alert-danger error"><h1>Please try again.</h1> <p>{`${msg}`}</p><p>{`${errorMsg}`}</p></div>);
-
-const OverMsg = ({ msg }) => (<div className="alert alert-info"><p>{`${msg}`}</p></div>);
-OverMsg.propTypes = {
-  msg: PropTypes.string.isRequired,
-};
-
-class Home extends Component {
+export class HomeComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
       repoList: [],
-      feedList: [],
-      isError: 0,
-      errorMsg: '',
-      userFeedPageNum: 2,
-      publicFeedPageNum: 2,
+      repoFetchError: {
+        type: '',
+        msg: '',
+      },
+      userRepoFetchError: {
+        type: '',
+        msg: '',
+      },
       repoSearchPageNum: 2,
     };
-    this.homeRef = null;
     this.getUserRepos = this.getUserRepos.bind(this);
-    this.getPublicFeed = this.getPublicFeed.bind(this);
-    this.getMoreFeeds = this.getMoreFeeds.bind(this);
     this.getMoreRepos = this.getMoreRepos.bind(this);
     this.onSearchSubmit = this.onSearchSubmit.bind(this);
     this.handleSearchChange = this.handleSearchChange.bind(this);
@@ -54,11 +46,6 @@ class Home extends Component {
     if (this.props.isAuthenticated && !this.props.user) {
       this.props.getInfo();
     }
-
-    // if user not logged in, show public feed
-    if (!this.props.isAuthenticated && this.props.loginRequest === false) {
-      this.getPublicFeed();
-    }
   }
 
   componentWillUpdate(nextProps, nextState) {
@@ -66,28 +53,7 @@ class Home extends Component {
     if (nextProps.isAuthenticated && !nextProps.user) {
       this.props.getInfo();
     }
-
-    // user is logged in, user data is fetched, so fetch user feeds list
-    if (nextProps.isAuthenticated && nextProps.user &&
-      (nextProps.userFeedsError === null && nextProps.getUserFeedsList === null)) {
-      // if feed list empty and if there was an error in fetching last time then dont fetch
-      this.props.fetchUserFeeds(nextProps.user.login);
-    }
-
-    // user has signed out, fetched public feeds
-    if (!nextProps.isAuthenticated
-      && nextState.feedList !== null
-      && (!nextState.feedList.length > 0 && nextState.isError !== PUBLIC_FEEDS_ERROR)) {
-      // if no error came in fetching public feeds then fetch them else stop
-
-      this.getPublicFeed();
-    }
   }
-
-  componentWillUnmount() {
-    this.homeRef = null;
-  }
-
 
   onSearchSubmit(t, q) {
     if (t === 'repo') {
@@ -108,114 +74,113 @@ class Home extends Component {
   getReposByName(searchQuery, pageNum = 1) {
     fetchReposByName(searchQuery, pageNum).then((res) => {
       if (pageNum > 1) {
-        this.setState((state, props) => ({
-          repoList: state.repoList.concat(res.data.items),
-          isError: 0,
-          errorMsg: '',
-          repoSearchPageNum: state.repoSearchPageNum + 1,
-        }));
+        if (res.data.items.length > 0) {
+          this.setState((state, props) => ({
+            repoList: state.repoList.concat(res.data.items),
+            repoFetchError: {
+              type: '',
+              msg: '',
+            },
+            repoSearchPageNum: state.repoSearchPageNum + 1,
+          }));
+        } else {
+          this.setState({
+            repoFetchError: {
+              type: 'over',
+              msg: 'No more repos to show.',
+            },
+          });
+        }
+      } else if (res.data.items.length === 0) {
+        this.setState({
+          repoFetchError: {
+            type: 'no-result',
+            msg: 'No repos found by that name.',
+          },
+        });
       } else {
         this.setState({
           repoList: res.data.items,
-          isError: 0,
-          errorMsg: '',
+          repoFetchError: {
+            type: '',
+            msg: '',
+          },
+          repoSearchPageNum: 2,
         });
       }
     }).catch((e) => {
       this.setState({
         repoList: [],
-        isError: USER_REPO_ERROR,
         repoSearchPageNum: 2,
-        errorMsg: 'Cant fetch repo list.',
+        repoFetchError: {
+          type: 'error',
+          msg: `Error: ${e}`,
+        },
       });
     });
   }
 
   getUserRepos(searchQuery, pageNum = 1) {
     fetchRepos(searchQuery, pageNum).then((res) => {
-      if (res.data.length > 0) {
-        if (pageNum > 1) {
+      if (pageNum > 1) {
+        if (res.data.length > 0) {
           this.setState((s, p) => ({
             repoList: s.repoList.concat(res.data),
-            isError: 0,
-            errorMsg: '',
+            userRepoFetchError: {
+              type: '',
+              msg: '',
+            },
             repoSearchPageNum: s.repoSearchPageNum + 1,
           }));
         } else {
           this.setState({
-            repoList: res.data,
-            isError: 0,
-            errorMsg: '',
-            repoSearchPageNum: 2,
+            userRepoFetchError: {
+              type: 'over',
+              msg: 'No more repos to show.',
+            },
           });
         }
+      } else if (res.data.length > 0) {
+        this.setState({
+          repoList: res.data,
+          userRepoFetchError: {
+            type: '',
+            msg: '',
+          },
+          repoSearchPageNum: 2,
+        });
       } else {
         this.setState({
           repoList: [],
-          isError: USER_REPO_ERROR,
-          errorMsg: `No Repos found for "${searchQuery}"`,
+          userRepoFetchError: {
+            type: 'no-result',
+            msg: `No Repos found for user "${searchQuery}"`,
+          },
         });
       }
     }).catch((err) => {
       // Raven.captureException(err, sentryExtra('Error during fetching user repos'));
       this.setState({
-        isError: USER_REPO_ERROR,
-        errorMsg: err,
+        userRepoFetchError: {
+          type: 'error',
+          msg: `${err.toString().includes('404')}` ? 'Invalid username.' : err,
+        },
         repoSearchPageNum: 2,
-        repoList: null,
+        repoList: [],
       });
     });
   }
 
-  getMoreFeeds() {
-    const { isAuthenticated, user } = this.props;
-    const { userFeedPageNum, isError, publicFeedPageNum } = this.state;
-
-    if (isAuthenticated) { // if logged in fetch user feeds
-      this.props.fetchUserFeeds(user.login, userFeedPageNum);
-      this.setState((state, props) => ({
-        userFeedPageNum: state.userFeedPageNum + 1,
-      }));
-    }
-    if (isError !== PUBLIC_FEEDS_ERROR) {
-      this.getPublicFeed(publicFeedPageNum);
-      this.setState((state, props) => ({
-        publicFeedPageNum: state.publicFeedPageNum + 1,
-      }));
-    }
-  }
-
-  getPublicFeed(pageNum) {
-    if (this.homeRef) {
-      fetchPublicFeeds(pageNum).then((res) => {
-        if (pageNum <= 1) {
-          this.setState({
-            feedList: res.data,
-            repoList: [],
-          });
-        } else {
-          this.setState((state, props) => ({
-            feedList: state.feedList.concat(res.data),
-            repoList: [],
-          }));
-        }
-      }).catch((err) => {
-        this.setState({
-          isError: PUBLIC_FEEDS_ERROR,
-          errorMsg: `${err.toString().includes('403')}` ? 'API Limit Exceeded' : '',
-        });
-      });
-    }
-  }
-
-
   getMoreRepos() {
-    if (this.searchType && this.searchQuery && this.searchQuery.length >= 3) {
-      if (this.searchType === 'repo') {
-        this.getReposByName(this.searchQuery, this.state.repoSearchPageNum);
+    const { repoFetchError, repoSearchPageNum, userRepoFetchError } = this.state;
+
+    if (this.props.isAuthenticated &&
+      this.searchType && this.searchQuery && this.searchQuery.length >= 3) {
+      if (this.searchType === 'repo' && (repoFetchError.type === '')) {
+        this.getReposByName(this.searchQuery, repoSearchPageNum);
       }
-      if (this.searchType === 'user') {
-        this.getUserRepos(this.searchQuery, this.state.repoSearchPageNum);
+      if (this.searchType === 'user' && userRepoFetchError.type === '') {
+        this.getUserRepos(this.searchQuery, repoSearchPageNum);
       }
     }
   }
@@ -246,24 +211,35 @@ class Home extends Component {
 
 
   render() {
+    // USER not SIGNED IN
+    if (!this.props.isAuthenticated && this.props.loginRequest === false) {
+      return (
+        <div className="row">
+          <div className="col-lg-12">
+            <br />
+            <PublicFeed />
+            <br />
+          </div>
+        </div>);
+    }
+
     const {
-      user: data, userFeedsError, isAuthenticated,
-      getUserFeedsList: userFeeds, feedExhaustError,
+      user: data,
     } = this.props;
 
     const {
-      repoList, isError, feedList: publicFeedList, errorMsg, searchQuery,
+      repoList, searchQuery, repoFetchError, userRepoFetchError,
     } = this.state;
 
-    const feedList = isAuthenticated ? userFeeds : publicFeedList;
-    const showSpinner = isError === 0 && (feedList === null || feedList.length === 0);
-    const feedError = isError === PUBLIC_FEEDS_ERROR || userFeedsError !== null;
-    const repoError = isError === USER_REPO_ERROR;
+    const repoError = userRepoFetchError.type === 'error' || userRepoFetchError.type === 'no-result';
+    const errorMsg = userRepoFetchError.msg;
+    const isFeedsOver = userRepoFetchError.type === 'over' || repoFetchError.type === 'over';
+    const isFeedsOverMsg = userRepoFetchError.msg || repoFetchError.msg;
 
     const RepoListAdv = withBottomScroll(RepoList, 'search', this.getMoreRepos);
 
     return (
-      <div className="row" ref={(re) => { this.homeRef = re; }}>
+      <div className="row">
         <div className="col-lg-12">
 
           <Profile data={data} />
@@ -273,10 +249,7 @@ class Home extends Component {
           <div className="tab-content" id="myTabContent">
 
             <TabContent name="feeds" active>
-              {feedError && <ErrorMsg msg="Can not fetch feeds." errorMsg={errorMsg} />}
-              {showSpinner && <Spinner name="line-scale" className="loading" />}
-              <FeedList feeds={feedList} getMoreFeeds={this.getMoreFeeds} />
-              {feedExhaustError && <OverMsg msg={feedExhaustError} />}
+              {data && <UserFeed />}
             </TabContent>
 
             <TabContent name="search">
@@ -288,8 +261,14 @@ class Home extends Component {
                    username={searchQuery}
                  />
               }
-              {repoError && <ErrorMsg msg="Cant fetch repository list." errorMsg={errorMsg} />}
+              {repoError && <ErrorMsg msg={errorMsg} errorMsg="" />}
+              {
+                (repoFetchError.type === 'error' || repoFetchError.type === 'no-result')
+                && <ErrorMsg msg={repoFetchError.msg} errorMsg="" />
+              }
               <RepoListAdv data={repoList} />
+              {isFeedsOver && <OverMsg msg={isFeedsOverMsg} />}
+
             </TabContent>
 
             <TabContent name="profile">
@@ -303,40 +282,27 @@ class Home extends Component {
   }
 }
 
-Home.defaultProps = {
-  // token: null,
+HomeComponent.defaultProps = {
   user: null,
-  userFeedsError: null,
   getInfo: () => null,
-  fetchUserFeeds: () => null,
-  getUserFeedsList: [],
   loginRequest: false,
   isAuthenticated: localStorage.getItem('auth-token') !== undefined,
-  feedExhaustError: null,
 };
 
-Home.propTypes = {
-  // token: PropTypes.string,
+HomeComponent.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   user: PropTypes.object,
-  getUserFeedsList: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
-  userFeedsError: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   getInfo: PropTypes.func,
-  fetchUserFeeds: PropTypes.func,
   isAuthenticated: PropTypes.bool,
   loginRequest: PropTypes.bool,
-  feedExhaustError: PropTypes.string,
 };
 
 function mapState(state) {
   return {
     user: state.getIn(['github', 'user']),
     token: state.getIn(['github', 'token']),
-    userFeedsError: state.getIn(['github', 'userFeedsError']),
-    feedExhaustError: state.getIn(['github', 'feedExhaustError']),
     isAuthenticated: state.getIn(['github', 'isAuthenticated']),
     loginRequest: state.getIn(['github', 'loginRequest']),
-    getUserFeedsList: getUserFeedsList(state),
   };
 }
 
@@ -344,8 +310,7 @@ function mapState(state) {
 function mapDispatch(dispatch) {
   return bindActionCreators({
     getInfo: getUserInfo,
-    fetchUserFeeds: getUserFeeds,
   }, dispatch);
 }
 
-export default connect(mapState, mapDispatch)(Home);
+export default connect(mapState, mapDispatch)(HomeComponent);

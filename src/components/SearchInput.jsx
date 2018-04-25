@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Subject } from 'rxjs';
 
 class SearchInput extends React.Component {
   constructor(props) {
@@ -7,31 +8,43 @@ class SearchInput extends React.Component {
     this.onChange = this.onChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
 
+    // created new Subject
+    this.onSearch$ = new Subject();
+
     this.state = {
       query: '',
       type: '',
     };
   }
 
-  componentWillMount() {
-    this.timer = null;
+  componentDidMount() {
+    // create the observer on subject
+    this.subscription = this.onSearch$
+      .filter(({ target, value }) => {
+        if (target === 'query') {
+          return value.length >= 3 || value.length === 0;
+        } return true;
+      })
+      .debounceTime(500 /* ms */)
+      .subscribe(({ target, value }) => {
+        this.setState({ [target]: value });
+        if (this.state.type
+          && this.state.query
+          && this.state.query.length >= 3) {
+          this.props.onClick(this.state.type, this.state.query);
+        }
+      });
   }
 
 
+  componentWillUnmount() {
+    if (this.subscription) { this.subscription.unsubscribe(); }
+  }
+
   onChange(e) {
-    clearTimeout(this.timer);
-    this.setState({
-      [e.target.name]: e.target.value,
-    });
+    this.onSearch$.next({ target: e.target.name, value: e.target.value });
 
     this.props.onChange(e);
-
-    // auto search without clicking the button
-    this.timer = setTimeout(() => {
-      if (this.state.query && this.state.query.length >= 3 && this.state.type) {
-        this.props.onClick(this.state.type, this.state.query);
-      }
-    }, 1000);
   }
 
   handleSubmit(e) {

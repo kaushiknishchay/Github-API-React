@@ -4,6 +4,30 @@ import { shallow } from 'enzyme';
 import SearchInput from '../SearchInput';
 
 describe('<SearchInput/>', () => {
+  let event;
+  let event2;
+  let clickEvent;
+
+  beforeAll(() => {
+    event = {
+      target: {
+        name: 'query',
+        value: 'airbnb',
+      },
+    };
+
+    event2 = {
+      target: {
+        name: 'type',
+        value: 'repo',
+      },
+    };
+
+    clickEvent = {
+      preventDefault: jest.fn(),
+    };
+  });
+
   it('should render', () => {
     const onClick = jest.fn();
     const onChange = jest.fn();
@@ -16,13 +40,13 @@ describe('<SearchInput/>', () => {
   });
 
   it('should detect Input Changes', async () => {
-    const onClick = jest.fn();
-    const onChange = jest.fn();
+    const mockOnClickfn = jest.fn();
+    const mockOnChangefn = jest.fn();
 
     const spyOnChangefn = jest.spyOn(SearchInput.prototype, 'onChange');
     const spyhandleSubmitfn = jest.spyOn(SearchInput.prototype, 'handleSubmit');
 
-    const wrapper = shallow(<SearchInput onClick={onClick} onChange={onChange} />);
+    const wrapper = shallow(<SearchInput onClick={mockOnClickfn} onChange={mockOnChangefn} />);
 
     const eQuery = wrapper.find('[name="query"]');
     const eSelect = wrapper.find('[name="type"]');
@@ -31,29 +55,25 @@ describe('<SearchInput/>', () => {
     expect(eQuery.length).toEqual(1);
     expect(eSubmitButton.length).toEqual(1);
 
-    const event = {
-      target: {
-        name: 'query',
-        value: 'airbnb',
-      },
-    };
-
+    // simulate query text enter
     eQuery.simulate('change', event);
-    eSelect.simulate('change', {
-      target: {
-        name: 'type',
-        value: 'repo',
-      },
-    });
 
+    // simulate query type selection
+    eSelect.simulate('change', event2);
+
+    // check if onChange method triggered
     expect(spyOnChangefn).toHaveBeenCalled();
 
-    eSubmitButton.simulate('click', {
-      preventDefault: jest.fn(),
-    });
+    // simulate button click
+    eSubmitButton.simulate('click', clickEvent);
+
+    // check if preventDefault called
+    expect(clickEvent.preventDefault).toHaveBeenCalled();
 
     expect(spyhandleSubmitfn).toHaveBeenCalled();
 
-    expect(onClick).toHaveBeenCalledWith('repo', 'airbnb');
+    expect(mockOnChangefn).toHaveBeenCalledWith(event);
+
+    expect(mockOnChangefn).toHaveBeenCalledWith(event2);
   });
 });

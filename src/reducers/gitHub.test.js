@@ -52,7 +52,10 @@ describe('github reducer', () => {
       token: null,
       user: null,
       isAuthenticated: false,
-      userFeedsError: null,
+      userFeedsError: {
+        type: '',
+        msg: '',
+      },
     }));
   });
 
@@ -81,8 +84,10 @@ describe('github reducer', () => {
       },
       isAuthenticated: true,
       normalizedFeed: null,
-      userFeedsError: null,
-      feedExhaustError: null,
+      userFeedsError: {
+        type: '',
+        msg: '',
+      },
     });
   });
 
@@ -116,7 +121,10 @@ describe('github reducer', () => {
       error: 'unable to fetch feeds',
     })).toEqual(initialState.merge({
       normalizedFeed: null,
-      userFeedsError: 'unable to fetch feeds',
+      userFeedsError: {
+        type: 'error',
+        msg: 'unable to fetch feeds',
+      },
     }));
   });
 
@@ -165,8 +173,6 @@ describe('github reducer', () => {
     expect(gitHub(initialState, {
       type: USER_FEEDS_UPDATE_OVER,
       error: 'no more feeds',
-    })).toEqual(initialState.merge({
-      feedExhaustError: 'no more feeds',
-    }));
+    })).toEqual(initialState.merge({ userFeedsError: { type: 'over', msg: 'no more feeds' } }));
   });
 });

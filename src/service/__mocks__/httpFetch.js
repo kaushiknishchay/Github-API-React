@@ -33,7 +33,7 @@ export function fetchPublicFeeds() {
   return new Promise((resolve, reject) => {
     resolve({
       data: [{
-        id: 1,
+        id: Math.random(10),
         type: 'PushEvent',
         created_at: '2018-03-29T11:08:09Z',
         payload: {
@@ -42,6 +42,18 @@ export function fetchPublicFeeds() {
           },
         },
       }],
+    });
+  });
+}
+
+export function fetchReposByName(name, page) {
+  return new Promise((resolve, reject) => {
+    resolve({
+      data: {
+        items: [{
+          id: Math.random(),
+        }],
+      },
     });
   });
 }
