@@ -6,6 +6,13 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
+# Run
+
+`yarn start` to start the server
+
+and go to the the folder containing the `gatekeeper` repo code and start the server.
+
+By Default server starts at http://localhost:9999 , if changed also change in the `src/lib/constant.js` file.
 
 # Note
 
