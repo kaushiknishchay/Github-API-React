@@ -58,7 +58,7 @@
   "devDependencies": {
     "coveralls": "^3.0.0",
     "cz-conventional-changelog": "^3.0.2",
-    "eslint": "^4.19.1",
+    "eslint": "^5.16.0",
     "eslint-config-airbnb": "^17.1.1",
     "eslint-plugin-import": "^2.9.0",
     "eslint-plugin-jsx-a11y": "^6.0.3",
