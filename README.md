@@ -6,6 +6,8 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/bc704b3e-8e06-4b1b-8c70-92694d96dd1a/deploy-status)](https://app.netlify.com/sites/elegant-albattani-6be67d/deploys)
+
 # Install Dependencies
 
 Run `yarn install` or `npm install` in the project folder to install all dependencies
