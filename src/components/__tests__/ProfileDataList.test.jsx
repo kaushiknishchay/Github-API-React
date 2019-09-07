@@ -29,7 +29,7 @@ describe('<ProfileDataList/>', () => {
     expect(list.at(2).text()).toEqual('Following: 20');
     expect(list.at(3).text()).toEqual('Public repos: 30');
     expect(list.at(4).text()).toEqual('Public Gists: 12');
-    expect(list.at(5).text()).toEqual('Blog: http://john.doe/');
+    expect(list.at(5).text()).toEqual('Blog:http://john.doe/');
     expect(list.at(6).text()).toEqual('Location: New York');
   });
 });
