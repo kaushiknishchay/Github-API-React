@@ -1,6 +1,8 @@
 # Disclaimer
-This repo is contains old code and is not actively maintained.
 
+*This repo contains old code and is not actively maintained.*
+
+## 
 
 This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app).
 
