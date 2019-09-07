@@ -23,16 +23,19 @@ export class UserFeedC extends Component {
 
 
   componentDidMount() {
-    if (this.props.user) { this.props.fetchUserFeeds(this.props.user.login); }
+    const { user, fetchUserFeeds } = this.props;
+    if (user) { fetchUserFeeds(user.login); }
   }
 
   getMoreFeeds() {
-    const { isAuthenticated, user, userFeedsError } = this.props;
+    const {
+      isAuthenticated, user, userFeedsError, fetchUserFeeds,
+    } = this.props;
     const { userFeedPageNum } = this.state;
 
     if (isAuthenticated && user && userFeedsError.get('type') !== 'over') {
       // if logged in fetch user feeds
-      this.props.fetchUserFeeds(user.login, userFeedPageNum);
+      fetchUserFeeds(user.login, userFeedPageNum);
       this.setState((state, props) => ({
         userFeedPageNum: state.userFeedPageNum + 1,
       }));

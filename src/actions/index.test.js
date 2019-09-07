@@ -1,4 +1,6 @@
-import { beginSignIn, getUserInfo, SIGN_OUT, signOut } from './index';
+import {
+  beginSignIn, getUserInfo, SIGN_OUT, signOut,
+} from './index';
 
 jest.mock('../service/httpFetch');
 

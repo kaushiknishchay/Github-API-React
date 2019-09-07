@@ -53,18 +53,19 @@
     "test:coverage": "react-scripts test --env=jsdom --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "commit": "git-cz",
     "precommit": "yarn lint",
-    "lint": "(eslint --ext=js --ext=jsx . ) && echo Lint Passed! ALL Clear! ❤"
+    "lint": "(eslint --fix --ext=js --ext=jsx . ) && echo Lint Passed! ALL Clear! ❤"
   },
   "devDependencies": {
     "coveralls": "^3.0.0",
     "cz-conventional-changelog": "^3.0.2",
-    "eslint": "^4.19.1",
     "eslint-config-airbnb": "^17.1.1",
     "eslint-plugin-import": "^2.9.0",
     "eslint-plugin-jsx-a11y": "^6.0.3",
     "eslint-plugin-react": "^7.7.0"
   },
   "eslintIgnore": [
+    "build/*",
+    "node_modules/*",
     "index.js",
     "registerServiceWorker.js",
     "coverage/*",
@@ -74,5 +75,17 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

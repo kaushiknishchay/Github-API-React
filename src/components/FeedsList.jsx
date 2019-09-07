@@ -5,8 +5,8 @@ import moment from 'moment';
 
 const FeedList = ({ feeds }) => (
   <div className="list-group">
-    {feeds !== null &&
-        feeds.map((feed) => {
+    {feeds !== null
+        && feeds.map((feed) => {
           let timeSince = null;
           let commitMsg = '';
           let avatarUrl = null;
@@ -48,6 +48,7 @@ const FeedList = ({ feeds }) => (
               id={feed.id}
               key={feed.id}
               href={repoUrl}
+              /* eslint-disable-next-line react/jsx-no-target-blank */
               target="_blank"
               className="list-group-item list-group-item-action flex-column align-items-start"
             >
@@ -56,13 +57,20 @@ const FeedList = ({ feeds }) => (
                   {avatarUrl && <img src={avatarUrl} alt={feed.actor.login} width="90" />}
                 </div>
                 <div className="flex-90">
-                  <h6 className="mb-1 feed-title">{feed.type} &rarr; {loginName}</h6>
+                  <h6 className="mb-1 feed-title">
+                    {feed.type}
+                    {' '}
+&rarr;
+                    {' '}
+                    {loginName}
+                  </h6>
                   <small style={{ float: 'right' }}>{timeSince}</small>
                   <br />
                   <p className="mb-1">{commitMsg}</p>
                 </div>
               </div>
-            </a>);
+            </a>
+          );
         })
         }
   </div>

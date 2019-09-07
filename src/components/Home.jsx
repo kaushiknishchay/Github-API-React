@@ -21,6 +21,10 @@ import PublicFeed from '../containers/PublicFeed';
 import UserFeed from '../containers/UserFeed';
 
 export class HomeComponent extends Component {
+  searchQuery = '';
+
+  searchType= '';
+
   constructor(props) {
     super(props);
     this.state = {
@@ -42,16 +46,18 @@ export class HomeComponent extends Component {
   }
 
   componentDidMount() {
+    const { isAuthenticated, user, getInfo } = this.props;
     // if user logged in, show his feed
-    if (this.props.isAuthenticated && !this.props.user) {
-      this.props.getInfo();
+    if (isAuthenticated && !user) {
+      getInfo();
     }
   }
 
   componentWillUpdate(nextProps, nextState) {
+    const { getInfo } = this.props;
     // user just signed in, and data isn't fetched so fetch data
     if (nextProps.isAuthenticated && !nextProps.user) {
-      this.props.getInfo();
+      getInfo();
     }
   }
 
@@ -173,9 +179,9 @@ export class HomeComponent extends Component {
 
   getMoreRepos() {
     const { repoFetchError, repoSearchPageNum, userRepoFetchError } = this.state;
-
-    if (this.props.isAuthenticated &&
-      this.searchType && this.searchQuery && this.searchQuery.length >= 3) {
+    const { isAuthenticated } = this.props;
+    if (isAuthenticated
+      && this.searchType && this.searchQuery && this.searchQuery.length >= 3) {
       if (this.searchType === 'repo' && (repoFetchError.type === '')) {
         this.getReposByName(this.searchQuery, repoSearchPageNum);
       }
@@ -195,24 +201,21 @@ export class HomeComponent extends Component {
     }
   }
 
-  searchQuery = '';
-  searchType= '';
-
-
   // eslint-disable-next-line class-methods-use-this
   componentDidCatch(error, errorInfo) {
-    if (this.props.isAuthenticated) {
+    const { isAuthenticated, user } = this.props;
+    if (isAuthenticated) {
       Raven.setUserContext({
-        email: this.props.user.login,
+        email: user.login,
       });
     }
     Raven.captureException(error, { extra: errorInfo });
   }
 
-
   render() {
+    const { isAuthenticated, loginRequest } = this.props;
     // USER not SIGNED IN
-    if (!this.props.isAuthenticated && this.props.loginRequest === false) {
+    if (!isAuthenticated && loginRequest === false) {
       return (
         <div className="row">
           <div className="col-lg-12">
@@ -220,7 +223,8 @@ export class HomeComponent extends Component {
             <PublicFeed />
             <br />
           </div>
-        </div>);
+        </div>
+      );
     }
 
     const {
@@ -254,12 +258,14 @@ export class HomeComponent extends Component {
 
             <TabContent name="search">
               {
-                 data &&
+                 data
+                 && (
                  <SearchInput
                    onChange={this.handleSearchChange}
                    onClick={this.onSearchSubmit}
                    username={searchQuery}
                  />
+                 )
               }
               {repoError && <ErrorMsg msg={errorMsg} errorMsg="" />}
               {

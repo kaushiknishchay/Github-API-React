@@ -18,42 +18,48 @@ class SearchInput extends React.Component {
   }
 
   componentDidMount() {
+    const { type, query } = this.state;
+    const { onClick } = this.props;
     // create the observer on subject
     this.subscription = this.onSearch$
       .filter(({ target, value }) => {
         if (target === 'query') {
           return value.length >= 3 || value.length === 0;
-        } return true;
+        }
+        return true;
       })
       .debounceTime(500 /* ms */)
       .subscribe(({ target, value }) => {
         this.setState({ [target]: value });
-        if (this.state.type
-          && this.state.query
-          && this.state.query.length >= 3) {
-          this.props.onClick(this.state.type, this.state.query);
+        if (type && query && query.length >= 3) {
+          onClick(type, query);
         }
       });
   }
 
 
   componentWillUnmount() {
-    if (this.subscription) { this.subscription.unsubscribe(); }
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 
   onChange(e) {
+    const { onChange } = this.props;
     this.onSearch$.next({ target: e.target.name, value: e.target.value });
-
-    this.props.onChange(e);
+    onChange(e);
   }
 
   handleSubmit(e) {
+    const { type, query } = this.state;
+    const { onClick } = this.props;
     e.preventDefault();
-    this.props.onClick(this.state.type, this.state.query);
+    onClick(type, query);
   }
 
 
   render() {
+    const { query } = this.state;
     return (
       <form onSubmit={this.handleSubmit}>
         <div className="input-group mr-3">
@@ -81,9 +87,9 @@ class SearchInput extends React.Component {
             type="button"
             className="ml-3 btn btn-primary"
             onClick={this.handleSubmit}
-            disabled={!((this.state.query.length >= 3))}
+            disabled={!((query.length >= 3))}
           >
-          Search
+            Search
           </button>
         </div>
       </form>

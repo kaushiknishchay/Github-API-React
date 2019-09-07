@@ -2,8 +2,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const TabContent = ({ name, active, ...props }) => (
-  <div className={`tab-pane fade${active ? ' show active' : ''}`} id={name} role="tabpanel" aria-labelledby={`${name}-tab`}>{props.children}
+const TabContent = ({
+  name, active, children,
+}) => (
+  <div className={`tab-pane fade${active ? ' show active' : ''}`} id={name} role="tabpanel" aria-labelledby={`${name}-tab`}>
+    {children}
   </div>
 );
 

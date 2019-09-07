@@ -14,7 +14,9 @@ const RepoList = ({ data }) => (
               <div className="d-flex w-100 justify-content-between">
                 <h5 className="mb-1">{repo.name}</h5>
                 <span>
-                    &#9733; {repo.watchers_count}
+                    &#9733;
+                  {' '}
+                  {repo.watchers_count}
                 </span>
               </div>
               <p className="mb-1">{repo.description}</p>

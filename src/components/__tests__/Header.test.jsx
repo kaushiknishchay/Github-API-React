@@ -31,4 +31,3 @@ describe('<Header /> Component', () => {
     expect(onClick.mock.calls[0][0]).toBe('text');
   });
 });
-

@@ -15,31 +15,32 @@ export class CallbackC extends Component {
   }
 
   componentDidMount() {
-    if (this.props.location && this.props.location.search) {
-      const authCode = CallbackC.getAuthCode(this.props.location.search);
+    const {
+      location, isAuthenticated, token, signIn,
+    } = this.props;
+    if (location && location.search) {
+      const authCode = CallbackC.getAuthCode(location.search);
 
       // condition to prevent sign in request trigger
       // if /callback?code=xxxxxxxxx url page is refreshed.
 
-      if (!this.props.isAuthenticated &&
-        (this.props.token === null || this.props.token === undefined)
+      if (!isAuthenticated
+        && (token === null || token === undefined)
         && !isTokenSaved()) {
-        this.props.signIn(authCode);
+        signIn(authCode);
       }
     }
   }
 
   render() {
+    const { isLoggedIn } = this.props;
     return (
       <div>
         Redirecting...
         {
-          this.props.isLoggedIn
-          && <Redirect to="/" />
-        }
-        {
-          !this.props.isLoggedIn
-          && <Redirect to="/?login_failed" />
+          isLoggedIn
+            ? <Redirect to="/" />
+            : <Redirect to="/?login_failed" />
         }
       </div>
     );

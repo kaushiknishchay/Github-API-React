@@ -5,7 +5,7 @@ import { withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Header from '../components/Header';
 import { AUTH_URL } from '../lib/constants';
-import { beginSignIn, signOut } from '../actions';
+import { beginSignIn, signOut as signOutAction } from '../actions';
 
 
 export class HeaderContainer extends React.Component {
@@ -23,15 +23,16 @@ export class HeaderContainer extends React.Component {
 
 
   onClick() {
+    const { isSignIn, signOut } = this.props;
     const token = localStorage.getItem('auth-token');
 
-    if (this.props.isSignIn && token !== undefined && token !== null) {
+    if (isSignIn && token !== undefined && token !== null) {
       try {
         localStorage.removeItem('auth-token');
       } catch (e) {
         // console.error('Couldn\'t delete token from localStorage.');
       }
-      this.props.signOut();
+      signOut();
     } else {
       this.goToAuthURL();
     }
@@ -73,7 +74,7 @@ function mapState(state) {
 function mapDispatch(dispatch) {
   return bindActionCreators({
     signIn: beginSignIn,
-    signOut,
+    signOut: signOutAction,
   }, dispatch);
 }
 

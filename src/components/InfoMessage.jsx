@@ -7,7 +7,8 @@ export const ErrorMsg = ({ msg, errorMsg }) => (
     <h1>Please try again.</h1>
     <p>{`${msg}`}</p>
     <p>{`${errorMsg}`}</p>
-  </div>);
+  </div>
+);
 
 export const OverMsg = ({ msg }) => (<div className="alert alert-info"><p>{`${msg}`}</p></div>);
 OverMsg.propTypes = {
